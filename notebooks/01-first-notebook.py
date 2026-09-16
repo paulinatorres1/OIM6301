@@ -49,6 +49,18 @@ def _():
     return (mo,)
 
 
+@app.cell
+def _():
+    1+3
+    return
+
+
+@app.cell
+def _():
+    print("hello world")
+    return
+
+
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
@@ -121,6 +133,30 @@ def _(mo):
     return
 
 
+@app.cell
+def _(freight_charges):
+    freight_charges[0]
+    return
+
+
+@app.cell
+def _(freight_charges):
+    len(freight_charges)
+    return
+
+
+@app.cell
+def _(freight_charges):
+    total = sum(freight_charges)
+    return (total,)
+
+
+@app.cell
+def _(total):
+    total
+    return
+
+
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
@@ -146,6 +182,18 @@ def _(mo):
     there until you close the notebook, or `Ctrl+K` and search for undo.*
     """)
     return
+
+
+app._unparsable_cell(
+    r"""
+    ##Predictions
+    #1. if we only run the cell that was changed, my three cells will remain unchanged.
+    #2. the change will result in an error since the field we are using does not exist.
+    #3. when ran, it will result in a false statement since total= sum(freight_charges) does not equal 1
+    4. i do not think it will run since when cells are ran they are ran in order, if total is before the created expression it will result in an error since it does not exist
+    """,
+    name="_"
+)
 
 
 @app.cell(hide_code=True)
@@ -206,6 +254,76 @@ def _(mo):
     return
 
 
+@app.cell
+def _():
+    ##My predictions
+    #1. there is no -1, therefore it will result in an error. when counting negative numbers it begins straight from -1
+    #2. output will be a list of the values from the start until 3
+
+    #3. they are both using data point stored as"0"
+    #4. len will count how many confections there are
+    #5. yes, it shuld run as they are numerical values since "orders"
+    #6. i believe this will be an error as it is not specifing which "order" to use or whether it is all the orders summed
+    #7. i believe reverse=true will completely reverse the order of the charges presented, while it wont change the numbers listed itself. it will just be a different order/presentation
+    return
+
+
+@app.cell
+def _(freight_charges):
+    freight_charges[-1]
+    return
+
+
+@app.cell
+def _(freight_charges):
+    freight_charges[:3]
+    return
+
+
+@app.cell
+def _(freight_charges, orders):
+    orders[0]
+    freight_charges[0]
+    return
+
+
+@app.cell
+def _():
+    category = "Confections"
+    len(category)
+    return
+
+
+@app.cell
+def _(orders):
+    sum(orders)
+    return
+
+
+@app.cell
+def _(orders):
+    orders *2
+    return
+
+
+@app.cell
+def _(freight_charges, orders):
+    orders + freight_charges
+    return
+
+
+@app.cell
+def _(freight_charges):
+    sorted(freight_charges)
+    return
+
+
+@app.cell
+def _(freight_charges):
+    sorted(freight_charges, reverse=True)
+    return
+
+
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
@@ -246,6 +364,18 @@ def _(mo):
     return
 
 
+@app.cell
+def _():
+    "16.75" + "22.25"
+    return
+
+
+@app.cell
+def _():
+    16.75 + "22.25"
+    return
+
+
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
@@ -277,6 +407,30 @@ def _(mo):
 
     📖 Handbook: Python §3 Expressions and operators
     """)
+    return
+
+
+@app.cell
+def _(freight_charges):
+    freight_charges[0] > 20
+    return
+
+
+@app.cell
+def _(freight_charges):
+    freight_charges[0]>20
+    return
+
+
+@app.cell
+def _(freight_charges):
+    freight_charges[-1] ==max(freight_charges)
+    return
+
+
+@app.cell
+def _(freight_charges):
+    type(freight_charges[-1] == max(freight_charges))
     return
 
 
@@ -315,6 +469,12 @@ def _(mo):
 
     Your sentence should show `$120.50` and `$24.10`. If it does not, the experiments above left something changed: check that `freight_charges` still starts with `16.75` and that your `total` cell is still there.
     """)
+    return
+
+
+@app.cell
+def _(freight_charges, total):
+    print(f"The total freight is {total:.2f} and the average freight paid is {total/len(freight_charges):.2f} ")
     return
 
 
@@ -368,6 +528,32 @@ def _(mo):
     return
 
 
+@app.cell
+def _(freight_charges):
+    under_25 = []
+    for charge2 in freight_charges:
+        if charge2 < 25:
+            under_25.append(charge2)
+    under_25
+    return (under_25,)
+
+
+@app.cell
+def _(under_25):
+    print(f"There are {len(under_25)} charges and they add up to {sum(under_25):.2f}.")
+    return
+
+
+@app.cell
+def _(freight_charges):
+    under_251 = []
+    for charge3 in freight_charges:
+        if charge3 <= 25:
+            under_251.append(charge3)
+    under_251
+    return
+
+
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
@@ -406,6 +592,32 @@ def _(mo):
     return
 
 
+@app.cell
+def _():
+    #since the package is mispelled, marimo can't find a package under that name and import it 
+    return
+
+
+@app.cell
+def _():
+    #marimo can't find the file we are looking for since it does not exist
+    return
+
+
+app._unparsable_cell(
+    r"""
+    new_charges = [16.75, 22.25
+    """,
+    name="_"
+)
+
+
+@app.cell
+def _():
+    #the bracket in this expression is not closed, so it prevents itself from running correctly
+    return
+
+
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
@@ -415,6 +627,18 @@ def _(mo):
 
     `max(["9.50", "16.75", "22.25"])`
     """)
+    return
+
+
+@app.cell
+def _():
+    #prediction: 22.25
+    return
+
+
+@app.cell
+def _():
+    max(["9.50", "16.75", "22.25"])
     return
 
 
@@ -464,6 +688,14 @@ def _(mo):
     return
 
 
+@app.cell
+def _():
+    #1. I believe Python names total since we are commanding it to name the sum of freight charges as total.
+    #2. I would change freight_charges since it is the line that contains the error preventing python to run the code. 
+    #3. I would change all the data points to be numerical, since the error results due to the list containing both numerical and string characters which can't be added up since they are not all the same format. If one value is pending, i would not include it and separately disclose that values are missing from this total.
+    return
+
+
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
@@ -490,6 +722,18 @@ def _(mo):
 
     The square brackets inside `_ax.bar(...)` are a **list comprehension**, which **iterates** over `orders` and turns each number into text.
     """)
+    return
+
+
+@app.cell
+def _(freight_charges, orders):
+    import matplotlib.pyplot as plt
+
+    _fig, _ax = plt.subplots(figsize=(6, 2.6))
+    _ax.bar([str(_o) for _o in orders], freight_charges)
+    _ax.set_ylabel("freight")
+    _fig
+
     return
 
 
