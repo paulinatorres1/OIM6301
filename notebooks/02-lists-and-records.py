@@ -97,9 +97,32 @@ def _():
 @app.cell
 def _():
     cost = "16.75"
+    #assign value to cost (1&2)
+    print (f'The cost is ${cost}.')
+
+    type(cost)
+
+
     tax ="3.25"
     total_cost = float(cost) +float(tax)
+    #compute formula
+    print(total_cost)
     print(f'The cost is ${cost}. Total is ${total_cost}.')
+    #print out output
+    return
+
+
+@app.cell
+def _():
+    y = 5/2
+    print(y)
+    type(y)
+    return (y,)
+
+
+@app.cell
+def _(y):
+    int(y)
     return
 
 
@@ -113,44 +136,38 @@ def _():
 @app.cell
 def _():
     freight_charges=[16.75,22.2,25.00,18.50,30.10]
-    freight_charges
+    freight_charges #index
     return (freight_charges,)
 
 
 @app.cell
 def _(freight_charges):
-    freight_charges[1:5]
+    freight_charges[1:5] #list 4
     return
 
 
 @app.cell
 def _(costs, taxs):
 
-    print(f'The cost is ${costs}. Total is with tax ${costs+taxs}.')
+    print(f'The cost is ${costs}. Total is with tax ${costs+taxs}.') 
+    #error because it is not read as a number by python
     return
 
 
 @app.cell
 def _(freight_charges):
-    for charge in freight_charges:
-        freight_tax = charge * 0.0625
-        total_charge =charge+ freight_tax
-        print(f'total charge is ${total_charge:.2f}.')
+    for charge1 in freight_charges:
+        freight_tax = charge1 * 0.0625
+        total_charge =charge1 + freight_tax
+        print(f'Total charge is ${total_charge:.2f}.') #loop 6
     return
 
 
 @app.cell
-def _(freight_charges):
-    for charges in freight_charges:
-         if charges < 25: 
+def _(charges, freight_charges):
+    for charge2 in freight_charges:
+         if charge2 < 25: #condition 7 l
              print(charges)
-    return
-
-
-@app.cell
-def _():
-    x = 1
-    type(x)
     return
 
 
@@ -206,6 +223,23 @@ def _(mo):
 def _():
     charges = [16.75, 22.25, 25.00, 20.25, 36.25]
     charges
+    return (charges,)
+
+
+@app.cell
+def _(charges):
+    total = 0
+    step = 0
+    for each_charge in charges:
+        step = step + 1
+        print(f"Step {step}: looking at charge {each_charge}")
+        if each_charge < 25:
+            total = total + each_charge
+            print(f" {each_charge} is bellow 25, so added it. Running total is now {total}")
+        else:
+            print(f" {each_charge} is NOT bellow 25, so skipped it. Total stays {total}")
+
+    total
     return
 
 
@@ -255,12 +289,17 @@ def _(mo):
     own, added with the **+** button.
 
     **A ·**
+    If a score satifies two tests at once, Marimo will print the first condition the score satisfies, in the order the code was written in an if/elif/else chain.
+
 
     **C ·**
+    Append adds a single item to the end of a list, meaning if you append a list to the end of another list it will add this new list as a single item at the end of the previously existing list, rather than adding each of its items individually.
 
     **D ·**
+    The method .sort() sorts a list in its place in accending order, meaning it modifies the original list, but it does not build a new list to give back, therefore, Python had nothing new to return and prints none.
 
     **E ·**
+    We would like two names for a same list when this list is continously used throughout a program and we want any change made through one name to be reflected on another that works on the same values, making changes made to the list through one name to be immediately visible in the other.
     """)
     return
 
@@ -290,11 +329,13 @@ def _(mo):
 @app.cell
 def _():
     score = 95
-    if score >= 60:
-        print("Pass")
-    elif score >= 90:
+    if score >= 90:
         print("A")
-    return (score,)
+    elif score >= 60:
+        print("Pass")
+    else:
+        print("Fail")
+    return
 
 
 @app.cell(hide_code=True)
@@ -320,8 +361,37 @@ def _(mo):
 @app.cell
 def _():
     statuses = ["shipped", "pending", "shipped", "cancelled", "shipped"]
-    statuses
+    statuses .count("shipped")
     return (statuses,)
+
+
+@app.cell
+def _(statuses):
+    shipped_count = 0
+    for status1 in statuses:
+        if status1 == "shipped":
+            shipped_count = shipped_count + 1
+    print(shipped_count)
+    return (shipped_count,)
+
+
+@app.cell
+def _(statuses):
+    not_shipped_count = 0
+    for status2 in statuses:
+        if status2 != "shipped":
+            not_shipped_count = not_shipped_count + 1
+    print (not_shipped_count)
+
+    # != is the same as "not equal to"
+    return
+
+
+@app.cell
+def _(shipped_count, statuses):
+    shipped_percentage = shipped_count / len(statuses) *100
+    print(shipped_percentage)
+    return
 
 
 @app.cell(hide_code=True)
@@ -348,9 +418,15 @@ def _(mo):
 @app.cell
 def _():
     order_lines = ["notebook", "pen"]
-    order_lines.append(["stapler", "tape"])
+    order_lines.extend(["stapler", "tape"])
     len(order_lines)
     return (order_lines,)
+
+
+@app.cell
+def _(order_lines):
+    order_lines[2]
+    return
 
 
 @app.cell(hide_code=True)
@@ -383,6 +459,13 @@ def _():
     return (tickers,)
 
 
+@app.cell
+def _(tickers):
+    sorted(tickers, reverse=True)
+    #the default is acending/alphabetical, by using "reverse" we receive the largest output first
+    return
+
+
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
@@ -413,10 +496,25 @@ def _(mo):
 @app.cell
 def _():
     prices = [12.50, 8.00, 19.99]
-    sale_prices = prices
+    sale_prices = prices[:]
     sale_prices.append(4.99)
     prices
-    return (prices, sale_prices,)
+    return prices, sale_prices
+
+
+@app.cell
+def _(prices, sale_prices):
+    prices is sale_prices
+    return
+
+
+@app.cell
+def _(sale_prices):
+    discounted_prices = []
+    for price in sale_prices:
+        discounted_prices.append (price * .9)
+    discounted_prices
+    return
 
 
 @app.cell(hide_code=True)
@@ -444,6 +542,21 @@ def _(mo):
 def _():
     print("100" + "50")
     print(100 + 50)
+    return
+
+
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    1. Python automatically brings together both expressions that are separated by the `+` but who come in as string of text. Therefore, they are not added since it does not recognize them as numbers
+    """)
+    return
+
+
+@app.cell
+def _():
+    print ("100" + "0.5")
+    print(100+0.5)
     return
 
 
