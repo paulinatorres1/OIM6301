@@ -641,6 +641,19 @@ def _(mo):
     return
 
 
+@app.cell
+def _(first_order):
+    first_order["Freight"]
+    return
+
+
+@app.cell
+def _():
+    # first_order["freight"] and first_order[0] create an error
+    #this is because there is no assigned variable with that exact name. Freight has the first character upper case and first_order 0 is not defined
+    return
+
+
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
