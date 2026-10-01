@@ -743,6 +743,39 @@ def _(mo):
     return
 
 
+@app.cell
+def _(orders):
+    t=0
+    for freight in orders:
+        t=t+freight["Freight"]
+
+    print(t)
+    return
+
+
+@app.cell
+def _(orders):
+    t1=0
+    for fx in orders:
+        if fx["ShippedDate"]== None:
+            t1+=1
+    print(t1)
+    return
+
+
+@app.cell
+def _(orders):
+    max_f = 0
+    max_order = None
+    for order in orders:
+        if order["Freight"] > max_f:
+            max_f = order["Freight"]
+            max_order = order
+
+    print(f'order {max_order["OrderID"]} at {max_f}')
+    return
+
+
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
@@ -763,11 +796,15 @@ def _(mo):
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
-    *One row is ...*
-
-    *(Replace this line with your own sentence. If this cell shows you code instead of
-    text, use the cell menu to turn it into a markdown cell.)*
+    *One row is one order that a customer has placed with the company, in other words, a single purchase, made on a particular day, that was packaged and shipped out.
     """)
+    return
+
+
+@app.cell
+def _(orders):
+    #check assumption
+    print(len(orders))
     return
 
 
@@ -804,6 +841,29 @@ def _():
         {"Symbol": "TSLA", "Shares": 150, "Price": 255.70},
     ]
     portfolio
+    return (portfolio,)
+
+
+@app.cell
+def _(portfolio):
+    portfolio_total = 0
+    for holding in portfolio:
+        portfolio_total = portfolio_total + (holding["Shares"] * holding["Price"])
+
+    print(f"Total cost of the portfolio: ${portfolio_total:,.2f}")
+    return
+
+
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    To get the total cost of the whole portfolio we have to sum the value of each holding. To get the value for each holding we would multiply the number of shares by the price. After this is done for every single stock, we would sum these quantities together and the result would be the total cost of the portfolio.
+    """)
+    return
+
+
+@app.cell
+def _():
     return
 
 
