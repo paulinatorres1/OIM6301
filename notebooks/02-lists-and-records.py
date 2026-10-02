@@ -864,6 +864,23 @@ def _(mo):
 
 @app.cell
 def _():
+    inventory = [
+        {"Product": "Notebook", "Quantity": 150, "UnitCost": 2.50},
+        {"Product": "Pen", "Quantity": 300, "UnitCost": 0.75},
+        {"Product": "Stapler", "Quantity": 40, "UnitCost": 8.25},
+        {"Product": "Folder", "Quantity": 220, "UnitCost": 1.10},
+        {"Product": "Tape", "Quantity": 90, "UnitCost": 3.40},
+    ]
+    return (inventory,)
+
+
+@app.cell
+def _(inventory):
+    inventory_total = 0 
+    for item in inventory:
+        inventory_total = inventory_total + (item["Quantity"] * item["UnitCost"])
+
+    print(f"Total inventory value: {inventory_total: ,.2f}")
     return
 
 
@@ -915,6 +932,29 @@ def _(mo):
         _where = f"could not write into {_data_dir.name}/: {_error}"
 
     _where
+    return (portfolio_csv,)
+
+
+@app.cell
+def _(portfolio_csv):
+    with open(portfolio_csv) as f: #open file
+        file_lines = f.readlines() #read every line
+
+    #now, we print the table (one row at a time, inside the stated loop)
+    print(f"{'name':<6} {'shares':>6} {'price':>10}") # the header row is printed once before the loop
+    file_total = 0
+    for line in file_lines[1:]:
+    #([1:] means "skip index 0"). The first line is the header (name,shares,price), not actual data.
+        name, shares, unit_price = line.strip().split(",")
+        shares = int(shares)
+        unit_price = float(unit_price)
+        print(f"{name:<6} {shares:>6} {unit_price:>10.2f}") #one line of the table, printed once per row
+        file_total = file_total + (shares * unit_price)
+
+    #prints the total
+    print(f"Total cost: ${file_total:,.2f}") 
+
+    #reminder: indentation decides "once per item" versus "once at the end"
     return
 
 
