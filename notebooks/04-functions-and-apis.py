@@ -199,12 +199,52 @@ def _(mo):
     return
 
 
+@app.function
+def count_shares(portfolio): #starts a function and lists tuples expected to receive
+    total_shares = 0 #counter starting at 0
+    for symbol, shares, price in portfolio: #goes through tuple and separates
+        total_shares = total_shares + shares #adds up total shares
+    return total_shares
+
+
+@app.cell
+def _(holdings, retirement_holdings):
+    count_shares(holdings), count_shares(retirement_holdings)
+    return
+
+
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
     ## ✏️ B · Without `return`
 
     Copy `count_shares` into a new cell under a new name, and put `print(...)` where the `return` was. Call it and keep the result in a name. In a markdown cell under it, answer: what does that name hold, and what could the next cell do with it?
+    """)
+    return
+
+
+@app.function
+def print_shares(portfolio):
+    total_shares = 0
+    for symbol, shares, price in portfolio:
+        total_shares = total_shares + shares
+    print(total_shares)
+    #In Python, every function returns something when it's called — even if you never write return. If a function's code finishes running without hitting a return statement, Python automatically hands back None (Python's "nothing" value).
+    #print(total_shares) only displays the number on screen — it doesn't send it back to whoever called the function. So when the function finishes, there's no return, and Python gives back None.
+
+
+@app.cell
+def _(holdings):
+    shares_result = print_shares(holdings)
+    return
+
+
+@app.cell
+def _(mo):
+    mo.md(r"""
+    **Answer.** In this case, "shares_result" holds "none", while "print_shares" uses "print()" instead of return, so it only displays the total on screen and doesn't give out a value back whenever it is called since "return" is missing, Python will always give back: "none"
+
+    Since the value inside of "shares_result" is none, the next cell could do nothing useful with it since the name is only as useful as the value in it. In other words, ehe value stored in the name is "none", which is not a number.
     """)
     return
 
