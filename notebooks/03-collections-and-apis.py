@@ -562,6 +562,7 @@ def _(requests):
         "&temperature_unit=fahrenheit&wind_speed_unit=mph"
         "&timezone=America/New_York"
     )
+    print(babson_url)
     babson_reply = requests.get(babson_url, timeout=10)
     babson_reply.status_code
     return (babson_reply,)
@@ -577,7 +578,8 @@ def _(mo):
 
 @app.cell
 def _(babson_reply):
-    babson_weather = babson_reply.json()
+    babson_weather = babson_reply.json() #dictionary holds current weather 15 mins ago
+    # print the json response from Babson weather station
     babson_weather
     return (babson_weather,)
 
@@ -623,7 +625,7 @@ def _(requests):
         "https://api.open-meteo.com/v1/forecast?latitude=422&longitude=-71.2595&current=temperature_2m",
         timeout=10,
     )
-    bad_latitude_reply.status_code, bad_latitude_reply.json()
+    bad_latitude_reply.status_code, bad_latitude_reply.json() #error: Latitude must be in range of -90 to 90°. Given: 422
     return
 
 
@@ -684,6 +686,14 @@ def _(mo):
 
     **E · The wind in a sentence.** Add a cell that takes the wind speed and its unit out of `babson_weather` and puts both into one sentence with an f-string. *Check yourself: the unit reads `mp/h`, which is how this service writes miles per hour.*
     """)
+    return
+
+
+@app.cell
+def _(babson_weather):
+    wind_speed = babson_weather["current"]["wind_speed_10m"] #name object to get wind speed 
+    wind_unit = babson_weather["current_units"]["wind_speed_10m"] #get wind speed units
+    print(f"The wind speed is {wind_speed} {wind_unit}.")
     return
 
 
