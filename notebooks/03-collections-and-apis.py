@@ -152,18 +152,18 @@ def _():
 
 @app.cell(hide_code=True)
 def _(mo):
-    mo.md(r"""
+    mo.md(f"""
     ### Your written answers
 
     Several questions below ask for a sentence. This cell is where they go. Click into it, write under the letter, and press `Ctrl+Enter` (Windows) or `Cmd+Enter` (macOS).
 
     **B ·** France, Germany, Brazil, and USA are the countries with the most orders with all tied at 4 orders each.
 
-    **C ·**
+    **C ·** 1-list, 2- set, 3- dictionary, 4- tuple.
 
-    **D ·**
+    **D ·** I would rather work with dictionaries because the prices of stocks change contstantly. If a tuple were to be used, the prices would be fixed and unable to be updated, which doesn't reflect how stock prices actually behave in real time. We wouldn't be able to calculate an appropriate total portfolio value.
 
-    **G ·**
+    **G ·** The first result for "Babson Park" would have been in Florida, instead of MA which is the one we are looking at. This [0] reuslt would have incorrectly and silently showed data for Babson Park in Florida which we are not looking for since it is assuming there is nothing wrong with the record it is showing.
     """)
     return
 
@@ -493,6 +493,35 @@ def _():
         ("TSLA", 150, 255.70),
     ]
     holdings
+    return (holdings,)
+
+
+@app.cell
+def _(holdings):
+    #compute the cost to but the whole portfolio (self)
+    total_cost = 0
+    for _symbol, _shares, _price in holdings:
+        total_cost += _price * _shares
+
+    print("Total cost to buy the whole portfolio:", total_cost)
+    return (total_cost,)
+
+
+@app.cell
+def _(holdings, total_cost):
+    total_cost2 = 0 #starts the running total at zero, same as every other counter you've written this week.
+    for _symbol2, _shares2, _price2 in holdings: #each item in holdings is a tuple of three parts (("AAPL", 100, 173.93)). Since there are three names on the left and three parts in each tuple, Python unpacks them in order: _symbol gets the ticker, _shares gets the share count, _price gets the price. Even though _symbol isn't used anywhere in the loop body, it still has to be given a name to make the unpacking match.
+        total_cost2 += _price2 * _shares2 #is shorthand for total_cost = total_cost + (...). Multiplies each holding's shares by its price, and adds that to the running total.
+
+    print("Total cost to buy the whole portfolio:", total_cost)
+    return
+
+
+@app.cell
+def _(holdings):
+    #alternative way 
+    total_cost_alt = sum(_shares1 * _price1 for _symbol1, _shares1, _price1 in holdings)
+    print("Total cost to buy the whole portfolio:", total_cost_alt)
     return
 
 
@@ -705,6 +734,25 @@ def _(mo):
     return
 
 
+@app.cell
+def _(requests):
+    Wellesley_reply = requests.get(
+        "https://geocoding-api.open-meteo.com/v1/search?name=Wellesley&count=1",
+        timeout=10,
+    )
+    wellesley_place = Wellesley_reply.json()["results"][0]
+    wellesley_place["latitude"], wellesley_place["longitude"], wellesley_place["admin1"]
+
+
+    return (wellesley_place,)
+
+
+@app.cell
+def _(wellesley_place):
+    print(f"Latitude {wellesley_place["latitude"]}, in {wellesley_place["admin1"]}")
+    return
+
+
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
@@ -712,6 +760,35 @@ def _(mo):
 
     **Going further.** Use F's coordinates to ask for Wellesley's current temperature. Build the address with an f-string, so that changing the town changes the forecast.
     """)
+    return
+
+
+@app.cell
+def _(requests):
+    #G
+    BabsonPark_reply = requests.get(
+        "https://geocoding-api.open-meteo.com/v1/search?name=Babson%20Park&count=1",
+        timeout=10,
+    )
+    babson_park_place = BabsonPark_reply.json()["results"][0]
+    babson_park_place
+    return
+
+
+@app.cell
+def _(requests, wellesley_place):
+    test_latitude = wellesley_place["latitude"] #assign to object
+    test_longitude = wellesley_place["longitude"]
+
+    test_url = (
+        "https://api.open-meteo.com/v1/forecast"
+        f"?latitude={test_latitude}&longitude={test_longitude}"
+        "&current=temperature_2m"
+        "&temperature_unit=fahrenheit&timezone=America/New_York"
+    ) #build with f string so we can input and change url by town
+
+    test_reply = requests.get(test_url, timeout=10)
+    test_reply.json()["current"]["temperature_2m"]
     return
 
 
