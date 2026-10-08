@@ -283,6 +283,20 @@ def _(mo):
     return
 
 
+@app.cell
+def _():
+    #'$' + format(loan_amount + total_interest_15, ',.2f')
+    return
+
+
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    In this example, AI helped me create the table but formated the number using a format formula we had never used before in class. Therefore, I went in and re-wrote the formula using the f string method we have been using in class. I changed by using the standard format we are used to. This happened in question #5, I have copied the initial code AI gave me in the cell above.
+    """)
+    return
+
+
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
@@ -290,6 +304,175 @@ def _(mo):
 
     *Take at least one step past the main task, in any direction, and use your agent as much as you like. It does not have to work. State what you tried, what you found, and where it is in this notebook.*
     """)
+    return
+
+
+@app.function
+#build a schedule when the borrower pays extra toward principal every month
+#therefore, tthe loan finishes early, so there will be a loop until the balance reaches 0.
+def build_schedule_extra(principal, monthly_rate, base_payment, extra_payment):
+    balance = principal
+    schedule = []
+    month = 0
+
+    while balance > 0:
+        month = month + 1
+        starting_balance = balance
+
+        interest = round(balance * monthly_rate, 2)
+        total_payment = base_payment + extra_payment
+        principal_payment = round(total_payment - interest, 2)
+
+        if principal_payment > balance: #last payment pays off whatever balance remains
+            principal_payment = balance
+            total_payment = round(interest + principal_payment, 2)
+
+        balance = round(balance - principal_payment, 2)
+
+        schedule.append({
+            'month': month,
+            'starting_balance': starting_balance,
+            'payment': total_payment,
+            'principal': principal_payment,
+            'interest': interest,
+            'balance': balance
+        })
+
+    return schedule
+
+
+@app.cell
+def _(
+    loan_15,
+    loan_30,
+    loan_amount,
+    payment_15,
+    payment_30,
+    total_interest_15,
+    total_interest_30,
+):
+    #use the same structure as before but now add the extra payment to the schedule
+    extra_payment_amount = 200
+
+    schedule_15_extra = build_schedule_extra(loan_amount, loan_15["monthly_rate"], payment_15, extra_payment_amount)
+    schedule_30_extra = build_schedule_extra(loan_amount, loan_30["monthly_rate"], payment_30, extra_payment_amount)
+
+    months_saved_15 = loan_15["n_months"] - len(schedule_15_extra)
+    months_saved_30 = loan_30["n_months"] - len(schedule_30_extra)
+
+    interest_extra_15 = sum(row["interest"] for row in schedule_15_extra)
+    interest_extra_30 = sum(row["interest"] for row in schedule_30_extra)
+
+    interest_saved_15 = total_interest_15 - interest_extra_15
+    interest_saved_30 = total_interest_30 - interest_extra_30
+
+    print(f"15-year loan with extra $200/month: finishes {months_saved_15} months early, saves ${interest_saved_15:,.2f} in interest")
+    print(f"30-year loan with extra $200/month: finishes {months_saved_30} months early, saves ${interest_saved_30:,.2f} in interest")
+    return
+
+
+@app.cell
+def _(loan_30, payment_30, schedule_30):
+    #part 2: refinancing: after 5 years the rate changes to 6% for the 30 year loan
+    refinance_month = 5 * 12
+    refinance_rate = 0.06
+    refinance_cost = 6000
+
+    #the balance left over at the moment of refinancing
+    balance_at_refinance = schedule_30[refinance_month - 1]["balance"]
+    remaining_months = loan_30["n_months"] - refinance_month
+
+    new_monthly_rate = refinance_rate / 12
+    new_payment = monthly_payment(balance_at_refinance, new_monthly_rate, remaining_months)
+
+    schedule_refinanced = build_schedule(balance_at_refinance, new_monthly_rate, remaining_months, new_payment)
+
+    print(f"Balance at month {refinance_month}: ${balance_at_refinance:,.2f}")
+    print(f"New monthly payment after refinancing: ${new_payment:,.2f}")
+    print(f"Versus: Old monthly payment: ${payment_30:,.2f}")
+    return new_payment, refinance_cost, refinance_month, remaining_months
+
+
+@app.cell
+def _(
+    new_payment,
+    payment_30,
+    refinance_cost,
+    refinance_month,
+    remaining_months,
+):
+    #calculate monthly savings after refinancing
+    monthly_savings = payment_30 - new_payment
+
+    #cumulative savings builds up $monthly_savings every month after refinancing
+    #find the first month where that cumulative total passes the $6,000 refinance cost
+    months_to_break_even = None
+    cumulative_savings = 0
+
+    for month in range(1, remaining_months + 1):
+        cumulative_savings = cumulative_savings + monthly_savings
+        if cumulative_savings >= refinance_cost:
+            months_to_break_even = month
+            break
+
+    print(f"Monthly savings after refinancing: ${monthly_savings:,.2f}")
+    print(f"Months after refinancing to break even on the ${refinance_cost:,} cost: {months_to_break_even}")
+    print(f"That is month {refinance_month + months_to_break_even} of the original loan's timeline")
+    return
+
+
+@app.cell
+def _(mo):
+    rate_slider = mo.ui.slider(start=0.03, stop=0.10, value=0.0703, step=0.0001, label="Annual interest rate")
+    extra_payment_slider = mo.ui.slider(start=0, stop=1000, value=200, step=25, label="Extra monthly payment ($)")
+
+    mo.vstack([rate_slider, extra_payment_slider])
+    return extra_payment_slider, rate_slider
+
+
+@app.cell
+def _(extra_payment_slider, loan_30, loan_amount, rate_slider):
+    #this cell reruns automatically whenever the slider is modified
+    interactive_monthly_rate = rate_slider.value / 12
+    interactive_payment = monthly_payment(loan_amount, interactive_monthly_rate, loan_30["n_months"])
+
+    interactive_schedule = build_schedule_extra(
+        loan_amount,
+        interactive_monthly_rate,
+        interactive_payment,
+        extra_payment_slider.value,
+    )
+
+    interactive_months_saved = loan_30["n_months"] - len(interactive_schedule)
+    interactive_total_interest = sum(row["interest"] for row in interactive_schedule)
+
+    print(f"Rate: {rate_slider.value:.2%}, extra payment: ${extra_payment_slider.value}/month")
+    print(f"Loan paid off in {len(interactive_schedule)} months ({interactive_months_saved} months early)")
+    print(f"Total interest paid: ${interactive_total_interest:,.2f}")
+    return
+
+
+@app.cell
+def _(schedule_15, schedule_30):
+    import altair as alt
+    import polars as pl
+
+    balance_15_df = pl.DataFrame(schedule_15).select("month", "balance").with_columns(pl.lit("15-year").alias("loan"))
+    balance_30_df = pl.DataFrame(schedule_30).select("month", "balance").with_columns(pl.lit("30-year").alias("loan"))
+    balance_combined_df = pl.concat([balance_15_df, balance_30_df])
+
+    balance_chart = alt.Chart(balance_combined_df).mark_line().encode(
+        x=alt.X("month", title="Month"),
+        y=alt.Y("balance", title="Outstanding Balance ($)"),
+        color=alt.Color("loan", title="Loan"),
+        tooltip=["loan", "month", "balance"],
+    ).properties(
+        title="Loan Balance Over Time",
+        width=600,
+        height=400,
+    )
+
+    balance_chart
     return
 
 
