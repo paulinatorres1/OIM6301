@@ -93,7 +93,7 @@ def _():
     # Your inputs.
     loan_amount = 400000
     annual_rates = {30: 0.0703, 15: 0.0642}
-    return (annual_rates,)
+    return annual_rates, loan_amount
 
 
 @app.cell(hide_code=True)
@@ -122,6 +122,23 @@ def _(annual_rates):
         "monthly_rate": annual_rates[30] / 12,
         "n_months": 30 * 12,
     }
+    return loan_15, loan_30
+
+
+@app.function
+#create a formula for monthly payments
+def monthly_payment(principal, monthly_rate, n_months):
+    payment = principal * (monthly_rate * (1 + monthly_rate) ** n_months) / ((1 + monthly_rate) ** n_months - 1)
+    return round(payment, 2)
+
+
+@app.cell
+def _(loan_15, loan_30, loan_amount):
+    payment_15 = monthly_payment(loan_amount, loan_15["monthly_rate"], loan_15["n_months"])
+    payment_30 = monthly_payment(loan_amount, loan_30["monthly_rate"], loan_30["n_months"])
+
+    print(f"The 15 year loan requires 180 monthly payments of ${payment_15:,.2f}")
+    print(f"The 30 year loan requires 360 monthly payments of ${payment_30:,.2f}")
     return
 
 
