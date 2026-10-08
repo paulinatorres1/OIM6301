@@ -91,7 +91,9 @@ def _(mo):
 @app.cell
 def _():
     # Your inputs.
-    return
+    loan_amount = 400000
+    annual_rates = {30: 0.0703, 15: 0.0642}
+    return (annual_rates,)
 
 
 @app.cell(hide_code=True)
@@ -105,7 +107,21 @@ def _(mo):
 
 
 @app.cell
-def _():
+def _(annual_rates):
+    #build a dictionary for each type of loan
+    loan_15 = {
+        "term_years": 15,
+        "annual_rate": annual_rates[15],
+        "monthly_rate": annual_rates[15] / 12,
+        "n_months": 15 * 12,
+    }
+
+    loan_30 = {
+        "term_years": 30,
+        "annual_rate": annual_rates[30],
+        "monthly_rate": annual_rates[30] / 12,
+        "n_months": 30 * 12,
+    }
     return
 
 
