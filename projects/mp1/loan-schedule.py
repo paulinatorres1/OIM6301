@@ -71,7 +71,7 @@ def _(mo):
 
     In this case, the loop would carry the outstanding balance from one month to the next. It would update the balance after each payment, reducing the balance. Principal paid could also be carried from one month to the next, as a running total of how much of the principal loan has been paidoff so far.
 
-    In section 6, I would check that the sum of all principal payments equal the original loan amount. These two should agree as they would show that the loan has been paid off by the borrower.
+    In section 6, I would check that the sum of all principal payments equal the original loan amount. These two should agree as they would show that the loan has been paid off by the borrower, accounting for any rounding discrepancies.
     """)
     return
 
@@ -153,7 +153,7 @@ def build_schedule(principal, monthly_rate, n_months, payment):
             interest = round(balance * monthly_rate, 2)
             principal_payment = round(payment - interest, 2)
 
-            if principal_payment > balance: #now lets make sure the final payment is 0 as well
+            if month == n_months: #force the last payment to clear the balance exactly
                 principal_payment = balance
                 current_payment = round(interest + principal_payment, 2)
             else:
@@ -178,7 +178,23 @@ def _(loan_15, loan_30, loan_amount, payment_15, payment_30):
     #call formula for each loan type
     schedule_15 = build_schedule(loan_amount, loan_15["monthly_rate"], loan_15["n_months"], payment_15)
     schedule_30 = build_schedule(loan_amount, loan_30["monthly_rate"], loan_30["n_months"], payment_30)
+    return schedule_15, schedule_30
+
+
+@app.cell
+def _(schedule_15, schedule_30):
+    schedule_15[-1], schedule_30[-1]
     return
+
+
+@app.cell
+def _(schedule_15, schedule_30):
+    total_interest_15 = sum(row["interest"] for row in schedule_15)
+    total_interest_30 = sum(row["interest"] for row in schedule_30)
+
+    print(f"Total interest paid, 15-year loan: ${total_interest_15:,.2f}")
+    print(f"Total interest paid, 30-year loan: ${total_interest_30:,.2f}")
+    return total_interest_15, total_interest_30
 
 
 @app.cell(hide_code=True)
@@ -187,6 +203,39 @@ def _(mo):
     ## 5. The Answer
 
     *A table of your results in the cell below, printed with `print` and f-strings, then one sentence here that answers the question in section 1, with the number in it.*
+    """)
+    return
+
+
+@app.cell
+def _(
+    loan_amount,
+    payment_15,
+    payment_30,
+    total_interest_15,
+    total_interest_30,
+):
+    print(f"{'Loan':<10}{'Monthly Payment':>18}{'Total Interest':>18}{'Total Paid':>18}")
+
+
+    print(f"{'15-year':<10}{'$' + f'{payment_15:,.2f}':>18}{'$' + f'{total_interest_15:,.2f}':>18}{'$' + f'{loan_amount + total_interest_15:,.2f}':>18}")
+
+
+    print(f"{'30-year':<10}{'$' + f'{payment_30:,.2f}':>18}{'$' + f'{total_interest_30:,.2f}':>18}{'$' + f'{loan_amount + total_interest_30:,.2f}':>18}")
+
+    #calculate difference between two loans 
+    payment_diff = abs(payment_15 - payment_30)
+    interest_diff = abs(total_interest_15 - total_interest_30)
+    total_paid_diff = abs((loan_amount + total_interest_15) - (loan_amount + total_interest_30))
+
+    print(f"{'Difference':<10}{'$' + f'{payment_diff:,.2f}':>18}{'$' + f'{interest_diff:,.2f}':>18}{'$' + f'{total_paid_diff:,.2f}':>18}")
+    return
+
+
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    For a 15-year loan, a borrower would pay $336,906.69 less than a 30-year loan; this significant difference is due to the amount of interest paid over the duration of the loan.
     """)
     return
 
@@ -202,7 +251,23 @@ def _(mo):
 
 
 @app.cell
-def _():
+def _(loan_amount, schedule_15, schedule_30):
+    principal_15 = sum(row["principal"] for row in schedule_15)
+    principal_30 = sum(row["principal"] for row in schedule_30)
+
+    #all amounts should be fairly equal 
+    print(f"Original loan amount: ${loan_amount:,.2f}")
+    print(f"15-year total principal paid: ${principal_15:,.2f}")
+    print(f"30-year total principal paid: ${principal_30:,.2f}")
+
+    return
+
+
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    I compared the sum of the principal payments per month for each loan versus the original loan amount of $400,000. The sum of the principal paid reflected a total loan pay off.
+    """)
     return
 
 
