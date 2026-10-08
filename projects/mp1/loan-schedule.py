@@ -139,6 +139,45 @@ def _(loan_15, loan_30, loan_amount):
 
     print(f"The 15 year loan requires 180 monthly payments of ${payment_15:,.2f}")
     print(f"The 30 year loan requires 360 monthly payments of ${payment_30:,.2f}")
+    return payment_15, payment_30
+
+
+@app.function
+#build monthly schedule with a loop
+def build_schedule(principal, monthly_rate, n_months, payment):
+    balance = principal
+    schedule = []
+    for month in range(1, n_months + 1):
+            starting_balance = balance  # balance carried over from the end of last month
+
+            interest = round(balance * monthly_rate, 2)
+            principal_payment = round(payment - interest, 2)
+
+            if principal_payment > balance: #now lets make sure the final payment is 0 as well
+                principal_payment = balance
+                current_payment = round(interest + principal_payment, 2)
+            else:
+                current_payment = payment
+
+            balance = round(balance - principal_payment, 2)
+
+            schedule.append({
+            'month': month,
+            'starting_balance': starting_balance,
+            'payment': current_payment,
+            'principal': principal_payment,
+            'interest': interest,
+            'balance': balance
+        })
+
+    return schedule
+
+
+@app.cell
+def _(loan_15, loan_30, loan_amount, payment_15, payment_30):
+    #call formula for each loan type
+    schedule_15 = build_schedule(loan_amount, loan_15["monthly_rate"], loan_15["n_months"], payment_15)
+    schedule_30 = build_schedule(loan_amount, loan_30["monthly_rate"], loan_30["n_months"], payment_30)
     return
 
 
@@ -149,11 +188,6 @@ def _(mo):
 
     *A table of your results in the cell below, printed with `print` and f-strings, then one sentence here that answers the question in section 1, with the number in it.*
     """)
-    return
-
-
-@app.cell
-def _():
     return
 
 
