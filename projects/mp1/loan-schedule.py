@@ -36,8 +36,14 @@ def _(mo):
 def _(mo):
     mo.md(r"""
     ## 1. The Question
+    """)
+    return
 
-    *Who would use this, and what decision does it help them make? Two or three sentences, in words somebody outside this course would understand.*
+
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    What is the repayment schedule for a loan I am considering? This schedule of payments would be useful for borrowers before choosing a loan. This framworks allows borrowers to input mortgage interest rates and visualize monthly payments, total interest, and remaining balance for different loan options, allowing them to decide which option best aligns with their budget and long-term goals.
     """)
     return
 
@@ -53,6 +59,19 @@ def _(mo):
     - *Which check will you use in section 6, and which two numbers should agree?*
 
     *Commit this notebook with the message `mp1: plan before AI`.*
+    """)
+    return
+
+
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    First, I would calculate the monthly interest for each loan by multiplying the loan balance by the interest rate divided by 12, for monthly interest. Next, I would calculate the monthly payments that directly offset the loan balance using the loan payment formula. Third, I would start with the  balance and go through each month one at a time with a loop. Next, in each month I would deduct the respective interest payment from the total payment to find total principal paid and reduce the loan balance by that principal payment. I would further save those amounts in the schedule: month's payment, interest, principal payment, and outstanding loan balance. I would also check that the last payment brings down the balance to zero, and adjust for any differences if they are necessary. Finally, I would compare both loans based on the interest paid and monthly payments.
+
+
+    In this case, the loop would carry the outstanding balance from one month to the next. It would update the balance after each payment, reducing the balance. Principal paid could also be carried from one month to the next, as a running total of how much of the principal loan has been paidoff so far.
+
+    In section 6, I would check that the sum of all principal payments equal the original loan amount. These two should agree as they would show that the loan has been paid off by the borrower.
     """)
     return
 
