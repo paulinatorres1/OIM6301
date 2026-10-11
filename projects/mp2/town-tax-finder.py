@@ -35,15 +35,41 @@ def _(mo):
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
+    This tool could help anyone looking to buy a home or move to a new area. It allows people to compare average home prices and property taxes across different towns, helping them find affordable places to live in and make better financial decisions depending on their economic conditions.
+    """)
+    return
+
+
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
     ## 2. My plan before AI
 
-        *Before you ask your agent anything, open the API's address in your browser and read what comes back. Then write how you would solve it: the steps, in order, in plain words, in five lines or more. Then answer these:
+    Before you ask your agent anything, open the API's address in your browser and read what comes back. Then write how you would solve it: the steps, in order, in plain words, in five lines or more. Then answer these:
 
     Which functions will your tool need? For each, what goes in and what comes out?
     Which addresses will they request?
     How will you know you have every record?
     Which check will you use in section 6, and which two numbers should agree?
-    Commit with the message mp2: plan before AI.*
+
+
+    Commit with the message mp2: plan before AI.
+    """)
+    return
+
+
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    First, I would use the API to get a list of all towns in Middlesex County. With that data, I would first check the total number of towns and make sure I collected all of them. Next, I would get tax information for each town. I would also look for the average value and average yearly tax bill for each town. To find only the ones we are looking for, I would keep only towns with average home values of $700,000 or less and tax bills under $8,000. With that, I would sort the remaining towns from the lowest to the highest tax bill. Finally, I would display the results in a table so the couple can compare their options.
+
+    Plainly, I would need to use loops and dictionaries to record the information requested. First, a function which extracts all towns within a county. Second, take town codes and a specific year to return town property tax information for that year. Third, with the conditions/limits requested find affordable towns and return a list of towns who satisfy the given requests.
+
+    I would use the following addresses since they contain the information we are looking for: /ma/towns/{dor_code}/history" and "/ma/county=Middlesex".
+
+    To ensure I have each record, I would check the total number of towns reported by the API in pagination. Then, I would count the towns I collected from all pages. Both numbers should be equal to ensure I have all towns in the county.
+
+    For section 6, I plan on checking my calculated bill to the average bill reported by the API. The two numbers should be approximately equal.
     """)
     return
 
