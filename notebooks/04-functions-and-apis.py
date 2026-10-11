@@ -575,6 +575,57 @@ def _(mo):
     return
 
 
+@app.cell
+def _(get_page):
+    def get_all_towns():
+        first_page = get_page(1) #read page 1 using the existing get page function
+        all_towns = first_page["items"]
+        pages = first_page["pagination"]["pages"] #reads the total number of pages
+
+        for page_number in range(2, pages + 1): #counts from 2 up through the last page number 
+            next_page = get_page(page_number)
+            all_towns.extend(next_page["items"]) #each loop fetched one more page and add its towns one at a time to the all_towns list
+
+        return all_towns
+
+    return (get_all_towns,)
+
+
+@app.cell
+def _(get_all_towns):
+    all_towns = get_all_towns()
+    len(all_towns), all_towns[0]["name"], all_towns[-1]["name"] #check yourself
+    return (all_towns,)
+
+
+@app.cell
+def _(all_towns):
+    highest_bill_town = None
+    highest_bill = 0
+    lowest_bill_town = None
+    lowest_bill = None
+
+    for _town in all_towns: #loops through each town and compares bills only
+        _bill = _town["average_single_family_bill_dollars"]
+        if _bill > highest_bill: #"best seen so far"
+            highest_bill = _bill
+            highest_bill_town = _town["name"]
+        if lowest_bill is None or _bill < lowest_bill: #looks for anything smaller than what's been seen 
+            lowest_bill = _bill
+            lowest_bill_town = _town["name"]
+
+    (highest_bill_town, highest_bill), (lowest_bill_town, lowest_bill)
+
+
+    return highest_bill_town, lowest_bill_town
+
+
+@app.cell
+def _(highest_bill_town, lowest_bill_town):
+    print(f"{highest_bill_town} has the highest average single-family tax bill in the state and {lowest_bill_town} has the lowest.")
+    return
+
+
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
