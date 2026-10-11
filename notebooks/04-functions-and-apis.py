@@ -423,6 +423,47 @@ def _(get_temperature):
     return
 
 
+@app.cell
+def _(requests):
+    def get_temperature2(town, state):
+        search_reply = requests.get(
+            "https://geocoding-api.open-meteo.com/v1/search",
+            params={"name": town, "count": 100}
+        )
+
+        places = search_reply.json()["results"]
+
+        for place in places:
+            if place.get("admin1") == state:
+                latitude = place["latitude"]
+                longitude = place["longitude"]
+                break
+        else:
+            return "Error"
+
+        weather_reply = requests.get(
+            "https://api.open-meteo.com/v1/forecast",
+            params={
+                "latitude": latitude,
+                "longitude": longitude,
+                "current": "temperature_2m",
+                "temperature_unit": "fahrenheit"
+            }
+        )
+
+        return weather_reply.json()["current"]["temperature_2m"]
+
+
+
+    return (get_temperature2,)
+
+
+@app.cell
+def _(get_temperature2):
+    get_temperature2("Babson Park", "Massachusetts")
+    return
+
+
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
@@ -491,6 +532,33 @@ def _(requests, wellesley_dor_code):
 def _(wellesley_2026):
     computed_bill = wellesley_2026["average_single_family_value_dollars"] * wellesley_2026["residential_rate_per_thousand"] / 1000
     computed_bill, wellesley_2026["average_single_family_bill_dollars"]
+    return
+
+
+@app.cell
+def _(requests):
+    def town_history(name): #going further
+        town_reply = requests.get(
+            "https://oim.zhili.dev/ma/towns",
+            params={"name": name}
+        )
+
+        town = town_reply.json()["items"][0]
+        dor_code = town["dor_code"]
+
+        history_reply = requests.get(
+            f"https://oim.zhili.dev/ma/towns/{dor_code}/history",
+            params={"fiscal_year": 2026}
+        )
+
+        return history_reply.json()
+
+    return (town_history,)
+
+
+@app.cell
+def _(town_history):
+    town_history("Wellesley")
     return
 
 
