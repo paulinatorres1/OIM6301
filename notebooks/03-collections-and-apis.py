@@ -232,6 +232,17 @@ def _(closing_prices):
     return
 
 
+@app.cell
+def _(closing_prices):
+    new_prices = {} #dictionary with prices up by 10%
+
+    for ticker1, price1 in closing_prices.items():
+        new_prices[ticker1] = round(price1 * 1.10, 2)
+
+    new_prices
+    return
+
+
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
@@ -525,6 +536,23 @@ def _(holdings):
     return
 
 
+@app.cell
+def _(holdings):
+    holding_costs = {} #builds a dictionary of ticker -> total cost for each holding
+    for _symbol, _shares, _price in holdings:
+        holding_costs[_symbol] = _shares * _price
+
+    largest_ticker = None #keep the best one seen so far pattern. whenever a ticker's cost beats the current record, both the cost and ticker's name get saved. 
+    largest_cost = 0
+    for _ticker, _cost in holding_costs.items():
+        if _cost > largest_cost:
+            largest_cost = _cost
+            largest_ticker = _ticker
+
+    largest_ticker, largest_cost
+    return
+
+
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
@@ -742,7 +770,6 @@ def _(requests):
     )
     wellesley_place = Wellesley_reply.json()["results"][0]
     wellesley_place["latitude"], wellesley_place["longitude"], wellesley_place["admin1"]
-
 
     return (wellesley_place,)
 
