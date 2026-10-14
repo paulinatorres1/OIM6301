@@ -973,15 +973,19 @@ name = "oim6301"
 version = "0.1.0"
 source = { virtual = "." }
 dependencies = [
+    { name = "altair" },
     { name = "marimo", extra = ["recommended"] },
     { name = "matplotlib" },
+    { name = "polars" },
     { name = "requests" },
 ]
 
 [package.metadata]
 requires-dist = [
+    { name = "altair", specifier = ">=6.3.0" },
     { name = "marimo", extras = ["recommended"], specifier = ">=0.24.2" },
     { name = "matplotlib", specifier = ">=3.11.2" },
+    { name = "polars", specifier = ">=1.44.2" },
     { name = "requests", specifier = ">=2.34.2" },
 ]
 

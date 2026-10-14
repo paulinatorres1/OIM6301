@@ -208,6 +208,34 @@ def _(mo):
 
 
 @app.cell
+def _(schedule_15):
+    print(f"Schedule for 15-year loan")
+    print(f"{'Month':<8}{'Payment':<15}{'Interest':<15}{'Principal':<15}{'Balance':<15}")
+
+    for row2 in schedule_15:
+        print(f"{row2['month']:<8}"
+              f"${row2['payment']:<14.2f}"
+              f"${row2['interest']:<14.2f}"
+              f"${row2['principal']:<14.2f}"
+              f"${row2['balance']:<14.2f}")
+    return
+
+
+@app.cell
+def _(schedule_30):
+    print(f"Schedule for 30-year loan")
+    print(f"{'Month':<8}{'Payment':<15}{'Interest':<15}{'Principal':<15}{'Balance':<15}")
+
+    for row1 in schedule_30:
+        print(f"{row1['month']:<8}"
+              f"${row1['payment']:<14.2f}"
+              f"${row1['interest']:<14.2f}"
+              f"${row1['principal']:<14.2f}"
+              f"${row1['balance']:<14.2f}")
+    return
+
+
+@app.cell
 def _(
     loan_amount,
     payment_15,
