@@ -23,4 +23,6 @@ def main():
     result = classify_bmi(bmi_value)
     print(f"Your BMI is {bmi_value:.2f}, and you category is {result}.")
 
-main()
+#main()
+if __name__ == "__main__":
+    main()
