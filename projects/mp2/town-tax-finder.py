@@ -355,7 +355,7 @@ def _(mo):
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
-    Function 1: get_towns(county)
+    ###Function 1: get_towns(county)
 
     The purpose of this function is to take the name of a county and return a list of all the towns in that county. One part I needed help understanding was:
 
@@ -366,10 +366,10 @@ def _(mo):
     I learned that `reply.json()` converts the API response into Python data we can use and data["pagination"]["total"] tells us how many towns there are in total. In which pagination aims to keep track of how many towns exist across all pages of results, since the API might not return every town in a single response.
 
 
-    --
 
 
-    Function 2: find_affordable_towns(county, budget, tax_limit, year)
+
+    ###Function 2: find_affordable_towns(county, budget, tax_limit, year)
 
     This function takes the county, budget, tax limit, and year as inputs. It returns a list of towns that meet both the home price and property tax limits, sorted from the lowest to highest tax bill.
 
@@ -454,6 +454,57 @@ def _(mo):
     mo.md(r"""
     ###b. Tax bills changes over 10 years
     """)
+    return
+
+
+@app.cell
+def _(affordable_towns, county, get_towns, requests):
+    cheapest_three = affordable_towns[:3]
+
+    ten_year_history = []
+
+    for history_town in cheapest_three:
+
+        town_list = get_towns(county)
+
+        for town_record in town_list:
+            if town_record["name"] == history_town["Town"]:
+                town_code = town_record["dor_code"]
+                break
+
+        history_reply = requests.get(
+            f"https://oim.zhili.dev/ma/towns/{town_code}/history",
+            params={"from_year": 2017, "to_year": 2026}
+        )
+
+        history_data = history_reply.json()
+
+        for year_record in history_data["years"]:
+            ten_year_history.append({
+                "Town": history_town["Town"],
+                "Year": year_record["fiscal_year"],
+                "Tax Bill": year_record["average_single_family_bill_dollars"]
+            })
+
+    print(f"{'Year':<10} {'Malden':>12} {'Waltham':>12} {'Dracut':>12}")
+    print("-" * 50)
+
+    for year in range(2017, 2027):
+        bills = {}
+
+        for record in ten_year_history:
+            if record["Year"] == year:
+                bills[record["Town"]] = record["Tax Bill"]
+
+        malden = bills.get("Malden")
+        waltham = bills.get("Waltham")
+        dracut = bills.get("Dracut")
+
+        malden_text = f"${malden:,.0f}" if malden is not None else "N/A"
+        waltham_text = f"${waltham:,.0f}" if waltham is not None else "N/A"
+        dracut_text = f"${dracut:,.0f}" if dracut is not None else "N/A"
+
+        print(f"{year:<10} {malden_text:>12} {waltham_text:>12} {dracut_text:>12}")
     return
 
 
