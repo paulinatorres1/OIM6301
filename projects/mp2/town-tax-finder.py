@@ -97,7 +97,7 @@ def _():
     budget_dollars = 700000
     tax_limit_dollars = 8000
     fiscal_year = 2026
-    return
+    return county, fiscal_year
 
 
 @app.cell(hide_code=True)
@@ -217,7 +217,7 @@ def _(find_affordable_towns):
     )
 
     affordable_towns
-    return
+    return (affordable_towns,)
 
 
 @app.cell(hide_code=True)
@@ -227,6 +227,32 @@ def _(mo):
 
     *Your result table, printed with print and f-strings with the columns lined up, and one sentence that answers the question in section 1 with the numbers in it. Print the sentence from code with an f-string, so that it changes when the data does.*
     """)
+    return
+
+
+@app.cell
+def _(affordable_towns):
+    print(f"{'Town':<20} {'Home Value':>15} {'Tax Rate':>12} {'Tax Bill':>15}")
+    print("-" * 65)
+
+    for town in affordable_towns:
+        print(f"{town['Town']:<20} ${town['Average Home Value']:>14,.0f} {town['Residential Tax Rate']:>12.2f} ${town['Average Tax Bill']:>14,.0f}")
+    return
+
+
+@app.cell
+def _(affordable_towns, county, fiscal_year):
+    if len(affordable_towns) > 0:
+        best = affordable_towns[0]
+
+        print(
+            f"For {fiscal_year}, {best['Town']} is the most affordable qualifying town "
+            f"in {county} County based on property taxes, with an average home value of "
+            f"${best['Average Home Value']:,.0f} and an annual property tax bill of "
+            f"${best['Average Tax Bill']:,.0f}."
+        )
+    else:
+        print(f"No towns in {county} County meet both budget and tax limits.")
     return
 
 
@@ -252,6 +278,20 @@ def _(mo):
 def _(mo):
     mo.md(r"""
     Pick one piece of AI output you did not accept as-is. What did it give you, what did you change, and how did you know? Point to the commit or the cell. If the agent got it right the first time: What did you do to verify that?
+    """)
+    return
+
+
+@app.cell
+def _():
+    #mo.ui.table(affordable_towns)
+    return
+
+
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    My agent gave me this code to print out the table above. I did not take it as it recommended as it was not the kind of table we were looking for. The assignment asked to print a results table with f-strings in a traditional manner. Although this idea from my agent was interactive and a good possible option, it was more complex and not what the assignment required, so I chose not to use it.
     """)
     return
 
