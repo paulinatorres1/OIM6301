@@ -508,5 +508,141 @@ def _(affordable_towns, county, get_towns, requests):
     return
 
 
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    ###c. Income per person
+    """)
+    return
+
+
+@app.cell
+def _(affordable_towns, county, get_towns, requests):
+    income_comparison = []
+
+    income_town_list = get_towns(county)
+
+    for income_town in affordable_towns:
+        income_code = None
+
+        for income_town_record in income_town_list:
+            if income_town_record["name"] == income_town["Town"]:
+                income_code = income_town_record["dor_code"]
+                break
+
+        if income_code is None:
+            continue
+
+        income_response = requests.get(
+            f"https://oim.zhili.dev/ma/towns/{income_code}"
+        )
+
+        income_info = income_response.json()
+        income_amount = income_info["income_per_capita_dollars"]
+        tax_amount = income_town["Average Tax Bill"]
+
+        if income_amount is not None and income_amount > 0:
+            income_percentage = tax_amount / income_amount * 100
+
+            income_comparison.append({
+                "Town": income_town["Town"],
+                "Tax Bill": tax_amount,
+                "Income per Person": income_amount,
+                "Income Share (%)": round(income_percentage, 2)
+            })
+
+
+    return (income_comparison,)
+
+
+@app.cell
+def _(income_comparison):
+    print(f"{'Town':<20} {'Tax Bill':>12} {'Income per person':>15} {'Share':>10}")
+    print("-" * 60)
+
+    for income_row in income_comparison:
+        print(
+            f"{income_row['Town']:<20} "
+            f"${income_row['Tax Bill']:>11,.0f} "
+            f"${income_row['Income per Person']:>14,.0f} "
+            f"{income_row['Income Share (%)']:>9.2f}%"
+        )
+    return
+
+
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    ###d. Interactive Tax Finder
+    """)
+    return
+
+
+@app.cell
+def _(mo):
+    county_picker = mo.ui.dropdown(
+        options=["Middlesex", "Norfolk", "Essex", "Suffolk", "Worcester"],
+        value="Middlesex",
+        label="Choose a County"
+    )
+
+    budget_picker = mo.ui.slider(
+        start=300000,
+        stop=1500000,
+        step=50000,
+        value=700000,
+        label="Maximum Home Budget"
+    )
+
+    tax_picker = mo.ui.slider(
+        start=3000,
+        stop=20000,
+        step=500,
+        value=8000,
+        label="Maximum Annual Tax Bill"
+    )
+
+    mo.vstack([county_picker, budget_picker, tax_picker])
+    return budget_picker, county_picker, tax_picker
+
+
+@app.cell
+def _(
+    budget_picker,
+    county_picker,
+    find_affordable_towns,
+    fiscal_year,
+    mo,
+    tax_picker,
+):
+    interactive_towns = find_affordable_towns(
+        county_picker.value,
+        budget_picker.value,
+        tax_picker.value,
+        fiscal_year
+    )
+
+    mo.ui.table(interactive_towns)
+    return (interactive_towns,)
+
+
+@app.cell
+def _(interactive_towns):
+    #Recommendation
+    if len(interactive_towns) > 0:
+        interactive_choice = interactive_towns[0]
+
+        print(
+            f"The town with the lowest qualifying tax bill is "
+            f"{interactive_choice['Town']}, with an average home value of "
+            f"${interactive_choice['Average Home Value']:,.0f} "
+            f"and an annual tax bill of "
+            f"${interactive_choice['Average Tax Bill']:,.0f}."
+        )
+    else:
+        print("No towns meet the selected limits.")
+    return
+
+
 if __name__ == "__main__":
     app.run()
