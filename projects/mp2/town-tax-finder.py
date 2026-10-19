@@ -14,6 +14,13 @@ def _():
     return (mo,)
 
 
+@app.cell
+def _():
+    import requests
+
+    return (requests,)
+
+
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
@@ -84,6 +91,15 @@ def _(mo):
     return
 
 
+@app.cell
+def _():
+    county = "Middlesex"
+    budget_dollars = 700000
+    tax_limit_dollars = 8000
+    fiscal_year = 2026
+    return
+
+
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
@@ -91,6 +107,105 @@ def _(mo):
 
     *Your functions, and the code that uses them.*
     """)
+    return
+
+
+@app.cell
+def _(requests):
+    # get all towns from a county
+
+    def get_towns(county): #will search for towns in a county
+        all_towns = [] #create an empty town list
+        page = 1 
+
+        while True: # start a loop in which we repeat the following code until Python is told otherwise
+            reply = requests.get( #request information from API
+                "https://oim.zhili.dev/ma/towns",
+                params={
+                    "county": county,
+                    "page": page,
+                    "per_page": 100
+                }
+            )
+
+            data = reply.json() #convert information extracted from API into a dictionary
+            towns = data["items"]
+            total = data["pagination"]["total"] #store total number of towns in "total"
+
+            all_towns.extend(towns) #add all towns to list
+
+            if len(all_towns) >= total: #once we collect all towns the loop stops
+                break
+
+            page += 1 #and the function is free to move to the next page
+
+        return all_towns 
+
+    return (get_towns,)
+
+
+@app.cell
+def _(requests):
+    #get tax information for each town
+
+    def town_history(dor_code, year): #create a function that takes a town's unique code and the fiscal year we want to dig further in
+        reply = requests.get( #request infromaiton from API
+            f"https://oim.zhili.dev/ma/towns/{dor_code}/history",
+            params={"fiscal_year": year}
+        )
+
+        history = reply.json()
+
+        for record in history["years"]: #look for information from a specific year
+            if record["fiscal_year"] == year:
+                return record
+
+        return None #if this year is not found, then return "None"
+
+    return (town_history,)
+
+
+@app.cell
+def _(town_history):
+    #testing
+    wellesley = town_history("317", 2026)
+
+    wellesley
+    return
+
+
+@app.cell
+def _(get_towns, town_history):
+    #find the towns that meet budget
+    #average home costs $700,000 or less AND the annual property tax bill is under $8,000.
+
+    def find_affordable_towns(county, budget, tax_limit, year): #create fucniton with these 4 inputs
+        towns = get_towns(county) #get all towns
+        affordable = []
+
+        for town in towns: #this loop looks at each towns' information
+            name = town["name"]
+            code = town["dor_code"]
+
+            history = town_history(code, year)
+
+            if history is not None: #makes sure we get the information solely for this year
+                value = history["average_single_family_value_dollars"] #we get only the information we need/want
+                rate = history["residential_rate_per_thousand"]
+                bill = history["average_single_family_bill_dollars"]
+
+                if value <= budget and bill < tax_limit: #apply conditions 
+                    affordable.append({ #we use append to add a dictionary containing the information for each qualifying town
+                        "Town": name,
+                        "Average Home Value": value,
+                        "Residential Tax Rate": rate,
+                        "Average Tax Bill": bill
+                    })
+
+        affordable.sort(key=lambda x: x["Average Tax Bill"]) #use average tax bill to sort from lowest to highest
+
+        return affordable #return qualifying towns
+
     return
 
 
