@@ -93,7 +93,7 @@ def _(mo):
 
 @app.cell
 def _():
-    county = "Norfolk"
+    county = "Middlesex"
     budget_dollars = 700000
     tax_limit_dollars = 8000
     fiscal_year = 2026
@@ -213,7 +213,7 @@ def _(get_towns, town_history):
 def _(find_affordable_towns):
     #test
     affordable_towns = find_affordable_towns(
-        "Norfolk", 700000, 8000, 2026
+        "Middlesex", 700000, 8000, 2026
     )
 
     affordable_towns
@@ -402,7 +402,7 @@ def _(mo):
     "Residential Tax Rate":12.39
     "Average Tax Bill":6073
 
-    As I predicted, when changing the county to Norfolk, the cheapest town had a higher average tax bill than Malden; the cheapest town in Middlesex with a bill of $4152 was significantly lower than Bellingham's $6073.
+    As I predicted, when changing the county to Norfolk, the cheapest town had a higher average tax bill than Malden; the cheapest town in Middlesex with a bill of $4952 was significantly lower than Bellingham's $6073.
     """)
     return
 
