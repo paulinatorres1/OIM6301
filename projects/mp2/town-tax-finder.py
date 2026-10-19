@@ -337,7 +337,7 @@ def _():
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
-    My agent gave me this code to print out the table above. I did not take it as it recommended as it was not the kind of table we were looking for. The assignment asked to print a results table with f-strings in a traditional manner. Although this idea from my agent was interactive and a good possible option, it was more complex and not what the assignment required, so I chose not to use it.
+    My agent gave me this code to print out the table above. I replaced the suggested interactive table with the print statement in Section 5, where I used f-strings to align the town names, home values, tax rates, and tax bills. This allowed me to follow the assignment's instructions while keeping the code simpler and easier to understand. The assignment asked to print a results table with f-strings in a traditional manner. Although this idea from my agent was interactive and a good possible option, it was more complex and not what the assignment required, so I chose not to use it.
     """)
     return
 
@@ -641,6 +641,14 @@ def _(interactive_towns):
         )
     else:
         print("No towns meet the selected limits.")
+    return
+
+
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    In this section, I explored different ways to compare the towns beyond their average property tax bills. First, I ranked the towns by tax rate and found that the order changed because home values also affect the final tax bill. Next, I compared ten years of tax bills for Malden, Waltham, and Dracut,  although some older years had missing data. I also calculated the tax bill as a percentage of income per person and created an interactive version of the tool where users can change the county and budget using dropdowns and sliders. These additions are shown in Sections 9a through 9d of my notebook.
+    """)
     return
 
 
