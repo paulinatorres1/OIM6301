@@ -352,8 +352,43 @@ def _(mo):
     return
 
 
-@app.cell
-def _():
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    Function 1: get_towns(county)
+
+    The purpose of this function is to take the name of a county and return a list of all the towns in that county. One part I needed help understanding was:
+
+    "data = reply.json()
+    towns = data["items"]
+    total = data["pagination"]["total"]"
+
+    I learned that `reply.json()` converts the API response into Python data we can use and data["pagination"]["total"] tells us how many towns there are in total. In which pagination aims to keep track of how many towns exist across all pages of results, since the API might not return every town in a single response.
+
+
+    --
+
+
+    Function 2: find_affordable_towns(county, budget, tax_limit, year)
+
+    This function takes the county, budget, tax limit, and year as inputs. It returns a list of towns that meet both the home price and property tax limits, sorted from the lowest to highest tax bill.
+
+    One line I needed help understanding was:
+
+    "affordable.sort(key=lambda x: x["Average Tax Bill"])"
+
+    I learned that .sort() organizes the list, but more specifically that "lambda" tells Python to use the average tax bill to sort the towns from cheapest to most expensive.
+    """)
+    return
+
+
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    **Prediction:**
+
+    I predict that changing from Middlesex County to Norfolk County will result in fewer towns meeting both conditions: the $700,000 home budget and the $8,000 annual tax limit. I also expect that the town with the lowest property tax bill in Norfolk will have a higher average tax bill than the cheapest qualifying town in Middlesex. I want to see whether changing counties makes it harder to find an affordable property, even when the budget stays the same.
+    """)
     return
 
 
