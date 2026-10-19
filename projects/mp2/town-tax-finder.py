@@ -266,6 +266,52 @@ def _(mo):
     return
 
 
+@app.cell
+def _(town_history):
+    wellesley_data = town_history("317", 2026)
+
+    wellesley_value = wellesley_data["average_single_family_value_dollars"]
+    wellesley_rate = wellesley_data["residential_rate_per_thousand"]
+    wellesley_bill = wellesley_data["average_single_family_bill_dollars"]
+
+    wellesley_calculated = wellesley_value * wellesley_rate / 1000
+
+    print("Town: Wellesley")
+    print(f"API Tax Bill: ${wellesley_bill:,.2f}")
+    print(f"Calculated Tax Bill: ${wellesley_calculated:,.2f}")
+
+    if abs(wellesley_bill - wellesley_calculated) < 5:
+        print("The two numbers agree!")
+    else:
+        print("The two numbers do not agree.")
+
+    #this cell looks at Wellesley and compares to a cell I ran above when checking if my functions were working.
+    return
+
+
+@app.cell
+def _(affordable_towns):
+    check_town = affordable_towns[0]
+
+    check_value = check_town["Average Home Value"]
+    check_rate = check_town["Residential Tax Rate"]
+    check_bill = check_town["Average Tax Bill"]
+
+    calculated_bill = check_value * check_rate / 1000
+
+    print(f"Town: {check_town['Town']}")
+    print(f"API Tax Bill: ${check_bill:,.2f}")
+    print(f"Calculated Tax Bill: ${calculated_bill:,.2f}")
+
+    if abs(check_bill - calculated_bill) < 5:
+        print("The two numbers agree!")
+    else:
+        print("The two numbers do not agree.")
+
+    #this one looks at our affordable towns list, one we care about
+    return
+
+
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
