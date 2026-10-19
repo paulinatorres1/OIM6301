@@ -206,6 +206,17 @@ def _(get_towns, town_history):
 
         return affordable #return qualifying towns
 
+    return (find_affordable_towns,)
+
+
+@app.cell
+def _(find_affordable_towns):
+    #test
+    affordable_towns = find_affordable_towns(
+        "Middlesex", 700000, 8000, 2026
+    )
+
+    affordable_towns
     return
 
 
