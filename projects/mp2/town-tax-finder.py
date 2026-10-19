@@ -417,5 +417,45 @@ def _(mo):
     return
 
 
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    ###a. Rank towns by tax rate instead of tax bill
+    """)
+    return
+
+
+@app.cell
+def _(affordable_towns):
+    towns_by_rate = sorted(
+        affordable_towns,
+        key=lambda x: x["Residential Tax Rate"] #low to high
+    )
+
+    for rate_town in towns_by_rate:
+        print(
+            f"{rate_town['Town']:<20} "
+            f"Tax Rate: {rate_town['Residential Tax Rate']:.2f} "
+            f"Tax Bill: ${rate_town['Average Tax Bill']:,.0f}"
+        )
+    return
+
+
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    The order for towns sorted based on tax rate differ from those sorted by tax bill. The reason for this might be that tax bills depend on both the home's value and the tax rate. In this case, a town might have a low tax rate but expensive homes, resulting in a higher average bill. Meaning that the town with the lowest tax rate isn't necessarily the one with the lowest tax bill.
+    """)
+    return
+
+
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    ###b. Tax bills changes over 10 years
+    """)
+    return
+
+
 if __name__ == "__main__":
     app.run()
