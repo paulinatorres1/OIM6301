@@ -93,7 +93,7 @@ def _(mo):
 
 @app.cell
 def _():
-    county = "Middlesex"
+    county = "Norfolk"
     budget_dollars = 700000
     tax_limit_dollars = 8000
     fiscal_year = 2026
@@ -213,7 +213,7 @@ def _(get_towns, town_history):
 def _(find_affordable_towns):
     #test
     affordable_towns = find_affordable_towns(
-        "Middlesex", 700000, 8000, 2026
+        "Norfolk", 700000, 8000, 2026
     )
 
     affordable_towns
@@ -388,6 +388,21 @@ def _(mo):
     **Prediction:**
 
     I predict that changing from Middlesex County to Norfolk County will result in fewer towns meeting both conditions: the $700,000 home budget and the $8,000 annual tax limit. I also expect that the town with the lowest property tax bill in Norfolk will have a higher average tax bill than the cheapest qualifying town in Middlesex. I want to see whether changing counties makes it harder to find an affordable property, even when the budget stays the same.
+    """)
+    return
+
+
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    **Results:**
+
+      Town":"Bellingham"
+    "Average Home Value":490174
+    "Residential Tax Rate":12.39
+    "Average Tax Bill":6073
+
+    As I predicted, when changing the county to Norfolk, the cheapest town had a higher average tax bill than Malden; the cheapest town in Middlesex with a bill of $4152 was significantly lower than Bellingham's $6073.
     """)
     return
 
