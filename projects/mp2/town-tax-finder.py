@@ -551,7 +551,6 @@ def _(affordable_towns, county, get_towns, requests):
                 "Income Share (%)": round(income_percentage, 2)
             })
 
-
     return (income_comparison,)
 
 
@@ -648,6 +647,23 @@ def _(interactive_towns):
 def _(mo):
     mo.md(r"""
     In this section, I explored different ways to compare the towns beyond their average property tax bills. First, I ranked the towns by tax rate and found that the order changed because home values also affect the final tax bill. Next, I compared ten years of tax bills for Malden, Waltham, and Dracut,  although some older years had missing data. I also calculated the tax bill as a percentage of income per person and created an interactive version of the tool where users can change the county and budget using dropdowns and sliders. These additions are shown in Sections 9a through 9d of my notebook.
+    """)
+    return
+
+
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    #10. Time Spent.
+    About how many hours this project took you outside class, as one number. It is not graded.
+    """)
+    return
+
+
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    4 hours
     """)
     return
 
