@@ -12,7 +12,7 @@
 
 import marimo
 
-__generated_with = "0.25.1"
+__generated_with = "0.24.2"
 app = marimo.App(width="medium", sql_output="polars")
 
 
@@ -144,7 +144,7 @@ def _(csv, ma_towns, mo):
     with open(ma_towns_csv, "w", newline="", encoding="utf-8") as _file:
         _writer = csv.DictWriter(_file, fieldnames=csv_columns, extrasaction="ignore")
         _writer.writeheader()
-        _writer.writerows(ma_towns)
+        _writer.writerows(ma_towns) #write the entire list of dictionaries into that file
 
     ma_towns_csv.name
     return (ma_towns_csv,)
@@ -196,6 +196,45 @@ def _(mo):
 
     **Going further.** Find the town with the most expensive average home in each county.
     """)
+    return
+
+
+@app.cell
+def _(towns_from_file):
+    #1 
+
+    #input: towns_from_file, a list of dictionaries
+    #output: {middlesex: xx, Worcester: xx}
+
+    county_counts={}
+    for town in towns_from_file:
+        if int(town["average_single_family_value_dollars"]) >= 1000000:
+            county = town["county"]
+            if county in county_counts: #if we've seen this county before
+                county_counts[county] += 1 # same as x = x+1
+            else:
+                county_counts[county] = 1
+
+    county_counts
+    return (county_counts,)
+
+
+@app.cell
+def _(county_counts):
+    sum(county_counts.values())
+    return
+
+
+@app.cell
+def _():
+    #2
+
+    return
+
+
+@app.cell
+def _():
+    #going further
     return
 
 
@@ -342,7 +381,7 @@ def _(mo, town_table):
         ORDER BY towns DESC
         """
     )
-    return (towns_over_threshold,)
+    return
 
 
 @app.cell(hide_code=True)
