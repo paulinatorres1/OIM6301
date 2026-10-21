@@ -683,8 +683,7 @@ def _(all_towns):
             lowest_bill_town = _town["name"]
 
     (highest_bill_town, highest_bill), (lowest_bill_town, lowest_bill)
-
-    return highest_bill_town, lowest_bill_town
+    return highest_bill, highest_bill_town, lowest_bill, lowest_bill_town
 
 
 @app.cell
@@ -751,6 +750,45 @@ def _(requests):
         timeout=10,
     )
     board_reply.status_code, board_reply.json()
+    return
+
+
+@app.cell
+def _(requests):
+    board_reply2 = requests.post(
+        "https://oim.zhili.dev/message",
+        json={"message": f"Hi from Pau!"},
+        timeout=10,
+    )
+    board_reply2.status_code, board_reply2.json()
+    return
+
+
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    The server answered "Missing x-token header". This message comes up because the server requires authentication but no token was provided in the request headers. It needs a header because the server needs to know who sent the request to verify that the user is authorized to access the information, protect the data, and prevent unauthorized use.
+    """)
+    return
+
+
+@app.cell
+def _(highest_bill, highest_bill_town, lowest_bill, lowest_bill_town):
+    # going further: builds a short answer to "which MA town pays the most/least in property tax?" from the all_towns data pulled earlier
+    question_message = f"MA property tax: {highest_bill_town} pays most (${highest_bill:,.0f}), {lowest_bill_town} pays least (${lowest_bill:,.0f})."
+    len(question_message), question_message
+    return (question_message,)
+
+
+@app.cell
+def _(question_message, requests):
+    question_board_reply = requests.post(
+        "https://oim.zhili.dev/message",
+        headers={"x-token": "paulinatorres1"},
+        json={"message": question_message},
+        timeout=10,
+    )
+    question_board_reply.status_code, question_board_reply.json()
     return
 
 
