@@ -544,8 +544,43 @@ def _(pl, town_table):
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
-    going further: Which counties have the highest average property tax bills among towns with more than 20,000 people?
+    Going further: Which counties have the highest average property tax bills among towns with more than 20,000 people?
     """)
+    return
+
+
+@app.cell
+def _(mo, town_table):
+    _df = mo.sql(
+        f"""
+        SELECT
+            county,
+            ROUND(AVG(average_single_family_bill_dollars), 2) AS average_tax_bill
+        FROM town_table
+        WHERE population > 20000
+        GROUP BY county
+        ORDER BY average_tax_bill DESC
+        """
+    )
+    return
+
+
+@app.cell
+def _(pl, town_table):
+    sql_check_bills = (
+        town_table
+        .filter(pl.col("population") > 20000)
+        .group_by("county")
+        .agg(
+            pl.col("average_single_family_bill_dollars")
+            .mean()
+            .round(2)
+            .alias("average_tax_bill")
+        )
+        .sort("average_tax_bill", descending=True)
+    )
+
+    sql_check_bills
     return
 
 
