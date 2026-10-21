@@ -216,7 +216,7 @@ def _(towns_from_file):
                 county_counts[county] = 1
 
     county_counts
-    return (county_counts,)
+    return county, county_counts
 
 
 @app.cell
@@ -226,15 +226,48 @@ def _(county_counts):
 
 
 @app.cell
-def _():
+def _(towns_from_file):
     #2
+    smallest_population = float("inf") #starts with an extremely large number, any real population will be smaller
+    largest_population = 0
 
+    smallest_town = None
+    largest_town = None
+
+    for town1 in towns_from_file:
+        population = int(town1["population"])
+
+        if population < smallest_population:
+            smallest_population = population
+            smallest_town = town1["name"]
+
+        if population > largest_population:
+            largest_population = population
+            largest_town = town1["name"]
+
+    print(f"Town with fewest people: {smallest_town}, {smallest_population:,} people")
+    print(f"Town with most people: {largest_town}, {largest_population:,} people")
     return
 
 
 @app.cell
-def _():
+def _(county, towns_from_file):
     #going further
+
+    most_expensive = {}
+
+    for town2 in towns_from_file:
+        county1 = town2["county"]
+        value = int(town2["average_single_family_value_dollars"])
+
+        if county not in most_expensive:
+            most_expensive[county1] = town2
+
+        elif value > int(most_expensive[county]["average_single_family_value_dollars"]):
+            most_expensive[county1] = town2
+
+    for county1, town2 in most_expensive.items():
+        print(f"{county1:<15} {town2['name']:<20} ${int(town2['average_single_family_value_dollars']):,.0f}")
     return
 
 
@@ -358,6 +391,74 @@ def _(mo):
     return
 
 
+@app.cell
+def _(pl, town_table):
+    #1
+
+    town_counts = town_table.group_by("county").agg(
+        pl.len().alias("town_count")
+    )
+
+    town_counts.sort("town_count") #counts towns in each county
+    return
+
+
+@app.cell
+def _(ma_counties, pl):
+    server_counts = pl.DataFrame(ma_counties) # convert records into df
+
+    server_counts
+    return
+
+
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    Both methods returned the same results for all 14 counties.
+    """)
+    return
+
+
+@app.cell
+def _(pl, town_table):
+    #2
+
+    top_five = (
+        town_table
+        .filter(pl.col("population") > 50000)
+        .sort("average_single_family_bill_dollars", descending=True)
+        .head(5)
+    )
+
+    top_five
+    return
+
+
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    #####Going further
+
+    #####Which counties have the highest average property tax bills among towns with more than 20,000 people?
+    """)
+    return
+
+
+@app.cell
+def _(pl, town_table):
+    county_average_bills = (
+        town_table
+        .filter(pl.col("population") > 20000)
+        .group_by("county")
+        .agg(pl.col("average_single_family_bill_dollars").mean().round(2).alias("Average Tax Bill"))
+        .sort("Average Tax Bill", descending=True)
+    )
+
+    county_average_bills
+
+    return
+
+
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
@@ -400,6 +501,50 @@ def _(mo):
     In the SQL cell, `1000000` is the bar a town's average home value has to reach. Before you change it to `2000000`, predict in a markdown cell under this question: which counties' counts can go down, and can any go up? Then make the same change in the polars cell that counts million-dollar towns, and run both. *Check yourself: both give Dukes, Middlesex and Norfolk 2 each and Nantucket 1, which is 7 towns.*
 
     **Going further.** Write a SQL query of your own on `town_table`, and check its answer in polars.
+    """)
+    return
+
+
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    Prediction: I predict that increasing the minimum average home value from $1,000,000 to $2,000,000 will decrease the number of qualifying towns in some counties. Counties that already had expensive homes might still have some qualifying towns, while others might have none at all. No county's count can increase because we are making the requirement more restrictive.
+    """)
+    return
+
+
+@app.cell
+def _(mo, town_table):
+    _df = mo.sql(
+        f"""
+        SELECT county, COUNT(*) AS town_count
+        FROM town_table
+        WHERE average_single_family_value_dollars >= 2000000
+        GROUP BY county
+        ORDER BY town_count DESC, county
+        """
+    )
+    return
+
+
+@app.cell
+def _(pl, town_table):
+    two_million_counts = (
+        town_table
+        .filter(pl.col("average_single_family_value_dollars") >= 2000000)
+        .group_by("county")
+        .agg(pl.len().alias("town_count"))
+        .sort(["town_count", "county"], descending=[True, False])
+    )
+
+    two_million_counts
+    return
+
+
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    going further: Which counties have the highest average property tax bills among towns with more than 20,000 people?
     """)
     return
 
