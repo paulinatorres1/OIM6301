@@ -640,6 +640,46 @@ def _(mo):
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
+    Which five towns with more than 50,000 people have the highest average annual property tax bills?
+    """)
+    return
+
+
+@app.cell
+def _(alt, pl, town_table):
+    chart_towns = (
+        town_table
+        .filter(pl.col("population") > 50000)
+        .sort("average_single_family_bill_dollars", descending=True)
+        .head(10)
+    )
+
+    tax_chart = alt.Chart(chart_towns).mark_bar().encode(
+        x=alt.X("name:N", title="Town", sort="-y"),
+        y=alt.Y("average_single_family_bill_dollars:Q",
+                title="Average Annual Property Tax Bill ($)"),
+        color=alt.Color("county:N", title="County")
+    ).properties(
+        title="Ten Highest Property Tax Bills Among Towns With Over 50,000 Residents",
+    width=600,
+        height=400
+    )
+
+    tax_chart
+    return
+
+
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    I colored the bars by county so we can see which counties the towns belong to. Colors make it easy to spot patterns at a glance. So this makes it easier to compare the towns and understand whether the highest property tax bills are concentrated in certain counties.
+    """)
+    return
+
+
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
     # 🚀 This Week's Work
 
     1. **What is due is listed under *Before next session* in the post-class notes.** I post them on the session page after each class, with the sections we reached, and the checkpoint on Canvas lists the same items.
