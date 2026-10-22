@@ -455,7 +455,6 @@ def _(pl, town_table):
     )
 
     county_average_bills
-
     return
 
 
