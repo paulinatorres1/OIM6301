@@ -97,7 +97,7 @@ def _():
     budget_dollars = 700000
     tax_limit_dollars = 8000
     fiscal_year = 2026
-    return county, fiscal_year
+    return budget_dollars, county, fiscal_year, tax_limit_dollars
 
 
 @app.cell(hide_code=True)
@@ -210,14 +210,37 @@ def _(get_towns, town_history):
 
 
 @app.cell
-def _(find_affordable_towns):
+def _(
+    budget_dollars,
+    county,
+    find_affordable_towns,
+    fiscal_year,
+    tax_limit_dollars,
+):
     #test
     affordable_towns = find_affordable_towns(
-        "Middlesex", 700000, 8000, 2026
+        county, budget_dollars, tax_limit_dollars, fiscal_year
     )
 
     affordable_towns
     return (affordable_towns,)
+
+
+@app.cell
+def _(affordable_towns):
+    import os
+    import csv
+
+    os.makedirs("projects/mp2/data", exist_ok=True)
+
+    with open("projects/mp2/data/affordable_towns.csv", "w", newline="") as _file:
+        _writer = csv.DictWriter(
+            _file,
+            fieldnames=["Town", "Average Home Value", "Residential Tax Rate", "Average Tax Bill"]
+        )
+        _writer.writeheader()
+        _writer.writerows(affordable_towns)
+    return
 
 
 @app.cell(hide_code=True)
@@ -392,15 +415,29 @@ def _(mo):
     return
 
 
+@app.cell
+def _(find_affordable_towns):
+    norfolk_affordable_towns = find_affordable_towns(
+        "Norfolk", 700000, 8000, 2026
+    )
+
+    len(norfolk_affordable_towns)
+    return
+
+
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
     **Results:**
 
-      Town":"Bellingham"
-    "Average Home Value":490174
-    "Residential Tax Rate":12.39
-    "Average Tax Bill":6073
+    Norfolk County had 7 towns meeting both conditions, compared to 12 towns in Middlesex County. This matches my prediction that fewer towns would qualify in Norfolk.
+
+    Cheapest qualifying town in Norfolk:
+
+      "Town":"Bellingham"
+    "Average Home Value": 49,0174
+    "Residential Tax Rate": 12.39
+    "Average Tax Bill": 6,073
 
     As I predicted, when changing the county to Norfolk, the cheapest town had a higher average tax bill than Malden; the cheapest town in Middlesex with a bill of $4952 was significantly lower than Bellingham's $6073.
     """)
@@ -550,7 +587,6 @@ def _(affordable_towns, county, get_towns, requests):
                 "Income per Person": income_amount,
                 "Income Share (%)": round(income_percentage, 2)
             })
-
     return (income_comparison,)
 
 
