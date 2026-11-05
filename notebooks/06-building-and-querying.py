@@ -224,6 +224,123 @@ def _(mo):
     return
 
 
+@app.cell
+def _(database, duckdb):
+    # Create table and insert Wellesley's data
+
+    with duckdb.connect(database) as _con:
+        _con.execute("""
+            CREATE TABLE IF NOT EXISTS town_bills4 (
+                name VARCHAR,
+                fiscal_year INTEGER,
+                average_single_family_bill_dollars DOUBLE,
+                FOREIGN KEY (name) REFERENCES towns(name),
+                PRIMARY KEY (name, fiscal_year)
+            )
+        """)
+
+        _con.execute("""
+            INSERT INTO town_bills4
+            VALUES ('Wellesley', 2025, 19792)
+        """)
+
+        print(_con.execute("SELECT * FROM town_bills4").pl())
+
+
+    return
+
+
+@app.cell
+def _(database, duckdb):
+
+    with duckdb.connect(database) as _con:
+        _con.execute("""
+            INSERT INTO town_bills1
+            VALUES ('FakeTown', 2025, 10000)
+        """)
+
+    return
+
+
+@app.cell
+def _(ask, database, duckdb, requests):
+    #GOING FURTHER:  Load every year of bills for all of Middlesex County's towns
+
+    _response = requests.get(
+        "https://oim.zhili.dev/ma/towns",
+        params={"county": "Middlesex", "per_page": 100},
+    )
+    _response.raise_for_status()
+    _county_towns = _response.json()["items"]
+
+    with duckdb.connect(database) as _con:
+        for _town in _county_towns:
+            _code = _town["dor_code"]
+            _history = requests.get(
+                f"https://oim.zhili.dev/ma/towns/{_code}/history"
+            ).json()
+            for _year in _history["years"]:
+                if _year["average_single_family_bill_dollars"] is None:
+                    continue
+                _con.execute(
+                    """
+                    INSERT INTO town_bills4
+                    VALUES (?, ?, ?)
+                    ON CONFLICT DO NOTHING
+                    """,
+                    [
+                        _history["name"],
+                        _year["fiscal_year"],
+                        _year["average_single_family_bill_dollars"],
+                    ],
+                )
+
+    ask("SELECT count(*) AS rows_loaded FROM town_bills4")
+    return
+
+
+@app.cell
+def _(ask):
+    # Find the Middlesex town whose bill grew the most over 10 years
+    ask("""
+        WITH years AS (
+            SELECT max(fiscal_year) AS latest_year
+            FROM town_bills4
+        )
+        SELECT
+            early.name,
+            early.fiscal_year AS early_year,
+            early.average_single_family_bill_dollars AS early_bill,
+            late.fiscal_year AS late_year,
+            late.average_single_family_bill_dollars AS late_bill,
+            late.average_single_family_bill_dollars - early.average_single_family_bill_dollars AS increase
+        FROM town_bills4 early
+        JOIN town_bills4 late
+            ON early.name = late.name
+            AND late.fiscal_year = early.fiscal_year + 10
+        JOIN years ON late.fiscal_year = years.latest_year
+        ORDER BY increase DESC
+        LIMIT 5
+    """)
+    return
+
+
+@app.cell
+def _(requests):
+
+    response = requests.get(
+        "https://oim.zhili.dev/ma/towns",
+        params={"county": "Middlesex"}
+    )
+
+    data = response.json()
+
+    print(type(data))
+    print(data.keys() if isinstance(data, dict) else data[:2])
+
+    return
+
+
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
@@ -231,6 +348,11 @@ def _(mo):
 
     A constraint checks every row that arrives, without anybody remembering to. Here is a town in a county that does not exist. `try` and `except` catch the refusal, so the rest of the notebook keeps running, and the cell shows the message.
     """)
+    return
+
+
+@app.cell
+def _():
     return
 
 
@@ -257,6 +379,33 @@ def _(mo):
 
     **Going further.** Find a rule the scenario of your database project states that a constraint cannot hold, and write the query that checks it instead.
     """)
+    return
+
+
+@app.cell
+def _(database, duckdb):
+    try:
+        with duckdb.connect(database) as _con:
+            _con.execute("INSERT INTO towns VALUES ('Brookline', 'Norfolk', 100, 50000, 10000)")
+        duplicate_name_result = "accepted"
+    except duckdb.ConstraintException as _error:
+        duplicate_name_result = str(_error).splitlines()[0] 
+    
+    try:
+        with duckdb.connect(database) as _con:
+            _con.execute("INSERT INTO towns VALUES ('Nowhereville', 'Norfolk', 0, 50000, 10000)")
+        zero_population_result = "accepted"
+    except duckdb.ConstraintException as _error:
+        zero_population_result = str(_error).splitlines()[0]
+
+    try:
+        with duckdb.connect(database) as _con:
+            _con.execute("INSERT INTO towns VALUES ('Somewhere', 'Narnia', 100, 50000, 10000)")
+        bad_county_result = "accepted"
+    except duckdb.ConstraintException as _error:
+        bad_county_result = str(_error).splitlines()[0]
+
+    duplicate_name_result, zero_population_result, bad_county_result
     return
 
 
@@ -309,7 +458,20 @@ def _(ask):
 
 
 @app.cell
-def _():
+def _(ask):
+    ask("""
+        SELECT
+            towns.name,
+            towns.county,
+            towns.population AS town_population,
+            counties.population AS county_population,
+            round(100.0 * towns.population / counties.population, 2) AS pct_of_county --computes the share--
+        FROM towns
+        JOIN counties ON towns.county = counties.name --matches each town row to its county row, so columns from both tables are available at once--
+        WHERE towns.population > 50000
+        ORDER BY towns.average_single_family_bill_dollars DESC
+        LIMIT 5
+    """) 
     return
 
 
