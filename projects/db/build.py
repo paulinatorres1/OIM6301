@@ -26,5 +26,32 @@ def _(mo):
     return
 
 
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    # 1. The Tables
+
+    This section creates the six tables for the Babson Investment Club database. Each table includes the necessary primary keys, foreign keys, and constraints to organize the data and enforce the business rules.
+    """)
+    return
+
+
+@app.cell
+def _():
+
+    members_sql = """
+    CREATE TABLE members (
+        member_id INTEGER PRIMARY KEY,
+        first_name VARCHAR NOT NULL,
+        last_name VARCHAR NOT NULL,
+        school_email VARCHAR NOT NULL UNIQUE,
+        class_year INTEGER NOT NULL,
+        join_date DATE NOT NULL
+    );
+    """
+
+    return
+
+
 if __name__ == "__main__":
     app.run()

@@ -86,3 +86,12 @@ One sentence for each table, in the way Northwind's would read: "One row of orde
 
 
 ## 4. Design Choices
+Four short answers, in your own words. Which key you chose where the business already had one, such as an email or a ticker, and why. Which relationships are optional, and what in the scenario tells you so. Which of the scenario's rules your tables cannot hold, and how you will check it instead. And one thing your agent proposed for the design that you changed or did not take, and why; if you designed it alone, one thing you checked in the ERD your agent drew.
+
+First off, I used unique_IDs as primary keys for members, portfolios, assets, and trades. The reason for this decision is that although members have unique emails and assets have individual tickers, these can change. By making a unique_ID correlated to each, a change in email or ticker wont affect their relationships.
+
+Members can have multiple portoflios or none at all, since hte scenario specifies that some members may not own any portfoliios. Moreover, a portfolio may have no trades yet, and an asset can exist without it have been traded. Therefore, these relationships are optional since they can exist without having any activity related to them. 
+
+The database cannot use a simple CHECK constraint to prevent a portfolio from selling more shares than it owns because this depends on previous transactions, not one single row. To do so, the database needs to know how many shares the portfolio owned before the sale.Therefore, I will use a SQL query to calculate the running balance of shares after each trade and flag any transactions where the balance becomes negative.
+
+I checked how the agent handled ticker changes in the ERD. Instead of using tickers as primary keys for assets, the design uses a separate TICKER_HISTORY table. I kept this approach because a company can change its ticker which doesn't mean it is becoming a completely different asset, and the database should be able to preserve its complete trading history, even under a new ticker. 
