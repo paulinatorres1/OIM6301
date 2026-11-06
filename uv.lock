@@ -974,6 +974,7 @@ version = "0.1.0"
 source = { virtual = "." }
 dependencies = [
     { name = "altair" },
+    { name = "duckdb" },
     { name = "marimo", extra = ["recommended"] },
     { name = "matplotlib" },
     { name = "polars" },
@@ -983,6 +984,7 @@ dependencies = [
 [package.metadata]
 requires-dist = [
     { name = "altair", specifier = ">=6.3.0" },
+    { name = "duckdb", specifier = ">=1.5.5" },
     { name = "marimo", extras = ["recommended"], specifier = ">=0.24.2" },
     { name = "matplotlib", specifier = ">=3.11.2" },
     { name = "polars", specifier = ">=1.44.2" },
