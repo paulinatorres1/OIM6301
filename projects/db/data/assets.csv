@@ -1,0 +1,16 @@
+asset_id,asset_name,asset_type,sector
+1,Apple Inc.,stock,Technology
+2,Microsoft Corporation,stock,Technology
+3,Amazon.com Inc.,stock,Consumer Discretionary
+4,Tesla Inc.,stock,Consumer Discretionary
+5,NVIDIA Corporation,stock,Technology
+6,JPMorgan Chase & Co.,stock,Financials
+7,Qwerty Media Inc.,stock,Communication Services
+8,SPDR S&P 500 ETF Trust,ETF,Index Fund
+9,Invesco QQQ Trust,ETF,Index Fund
+10,Vanguard Total Stock Market ETF,ETF,Index Fund
+11,iShares Russell 2000 ETF,ETF,Index Fund
+12,Bitcoin,crypto,
+13,Ethereum,crypto,
+14,Solana,crypto,
+15,Cardano,crypto,
