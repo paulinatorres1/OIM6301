@@ -23,7 +23,7 @@ def _(mo):
             return _con.sql(sql).pl()
 
 
-    return database, duckdb
+    return ask, database, duckdb
 
 
 @app.cell(hide_code=True)
@@ -208,6 +208,20 @@ def _(
                 f"INSERT INTO {table} SELECT * FROM read_csv_auto(?)",
                 [str(csv_path)]
             )
+        
+        # Create a view for weekly trading activity
+        _con.execute("""
+            CREATE VIEW weekly_trading_activity AS
+            SELECT
+                portfolio_id,
+                COUNT(*) AS number_of_trades,
+                SUM(quantity * price_per_unit) AS total_traded_value
+            FROM trades
+            WHERE trade_date > (
+                SELECT MAX(trade_date) FROM trades
+            ) - INTERVAL 7 DAY
+            GROUP BY portfolio_id
+        """)
 
     return
 
@@ -239,7 +253,6 @@ def _(mo):
     ).sort("price_date")
 
     asset_prices.head(10)
-
     return (asset_prices,)
 
 
@@ -264,7 +277,6 @@ def _(asset_prices):
     fig.tight_layout()
 
     fig
-
     return
 
 
@@ -283,6 +295,148 @@ def _(mo):
 
     This section checks how many records were loaded into each of the six database tables.
     """)
+    return
+
+
+@app.cell
+def _(ask):
+    # Count the number of rows in each database table
+    ask("""
+    SELECT 'members' AS table_name, COUNT(*) AS row_count FROM members
+    UNION ALL
+    SELECT 'portfolios', COUNT(*) FROM portfolios
+    UNION ALL
+    SELECT 'assets', COUNT(*) FROM assets
+    UNION ALL
+    SELECT 'ticker_history', COUNT(*) FROM ticker_history
+    UNION ALL
+    SELECT 'trades', COUNT(*) FROM trades
+    UNION ALL
+    SELECT 'closing_prices', COUNT(*) FROM closing_prices
+    ORDER BY table_name
+    """)
+
+    return
+
+
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    ## 5. A Row It Refuses
+
+    This section tests whether the database enforces its constraints by attempting to insert a trade with a negative quantity. Since the TRADES table requires quantity to be greater than zero, the database should reject the insertion.
+    """)
+    return
+
+
+@app.cell
+def _(database, duckdb):
+
+    # Test a trade that violates the quantity rule
+    try:
+        with duckdb.connect(database) as _con:
+            _con.execute("""
+                INSERT INTO trades (
+                    trade_id, portfolio_id, asset_id,
+                    trade_date, trade_type, quantity,
+                    price_per_unit, fee
+                )
+                VALUES (
+                    9999, 1, 1,
+                    '2026-10-15', 'buy', -5,
+                    150.00, 0
+                )
+            """)
+    except Exception as error:
+        print("The database rejected the row:")
+        print(error)
+
+    return
+
+
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    ## 6. Answers You Already Knew
+
+    This section uses three SQL queries to verify information that was intentionally included in the generated data. I know the expected answers before running the queries because they were defined in make_data.py.
+
+    1. **How many members are in the club?** Expected answer: 15 members.
+    2. **Which members have no portfolios?** Expected answer: member IDs 13, 14, and 15.
+    3. **Which assets have never been traded?** Expected answer: asset IDs 11 and 15.
+    """)
+    return
+
+
+@app.cell
+def _(ask):
+
+    # Question 1: How many members are in the club?
+    # Expected answer: 15
+
+    ask("""
+    SELECT COUNT(*) AS total_members
+    FROM members
+    """)
+
+    return
+
+
+@app.cell
+def _(ask):
+
+    # Question 2: Which members have no portfolios?
+    # Expected answer: member IDs 13, 14, and 15
+
+    ask("""
+    SELECT m.member_id, m.first_name, m.last_name
+    FROM members AS m
+    LEFT JOIN portfolios AS p
+        ON m.member_id = p.member_id
+    WHERE p.portfolio_id IS NULL
+    ORDER BY m.member_id
+    """)
+
+    return
+
+
+@app.cell
+def _(ask):
+
+    # Question 3: Which assets have never been traded?
+    # Expected answer: asset IDs 11 and 15
+
+    ask("""
+    SELECT a.asset_id, a.asset_name
+    FROM assets AS a
+    LEFT JOIN trades AS t
+        ON a.asset_id = t.asset_id
+    WHERE t.trade_id IS NULL
+    ORDER BY a.asset_id
+    """)
+
+    return
+
+
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    ## 7. A View
+
+    The weekly_trading_activity view summarizes the number of trades and total traded value for each portfolio during the last seven days. This allows the investment club to review recent trading activity without rewriting the same SQL query every week. The view will also be used in Part B.
+    """)
+    return
+
+
+@app.cell
+def _(ask):
+    # Test the weekly trading activity view
+    ask("""
+    SELECT *
+    FROM weekly_trading_activity
+    ORDER BY number_of_trades DESC
+    """)
+
     return
 
 
