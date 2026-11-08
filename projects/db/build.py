@@ -276,5 +276,15 @@ def _(mo):
     return
 
 
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    ## 4. Row Counts
+
+    This section checks how many records were loaded into each of the six database tables.
+    """)
+    return
+
+
 if __name__ == "__main__":
     app.run()
