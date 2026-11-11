@@ -100,7 +100,7 @@ def _(mo, pl, requests):
         town_rows = pl.DataFrame(_records).select(town_columns)
 
     county_rows.shape, town_rows.shape
-    return
+    return (town_rows,)
 
 
 @app.cell(hide_code=True)
@@ -246,7 +246,6 @@ def _(database, duckdb):
 
         print(_con.execute("SELECT * FROM town_bills4").pl())
 
-
     return
 
 
@@ -258,7 +257,6 @@ def _(database, duckdb):
             INSERT INTO town_bills1
             VALUES ('FakeTown', 2025, 10000)
         """)
-
     return
 
 
@@ -337,7 +335,6 @@ def _(requests):
 
     print(type(data))
     print(data.keys() if isinstance(data, dict) else data[:2])
-
     return
 
 
@@ -390,7 +387,7 @@ def _(database, duckdb):
         duplicate_name_result = "accepted"
     except duckdb.ConstraintException as _error:
         duplicate_name_result = str(_error).splitlines()[0] 
-    
+
     try:
         with duckdb.connect(database) as _con:
             _con.execute("INSERT INTO towns VALUES ('Nowhereville', 'Norfolk', 0, 50000, 10000)")
@@ -497,6 +494,18 @@ def _(ask):
     return
 
 
+@app.cell
+def _(ask):
+    ask("""
+    SELECT county, count(*), sum(population) AS total_pop, round(avg(population),2) AS avg_pop, round(avg(average_single_family_bill_dollars),2) AS avg_bill, max(population) as max_pop
+    FROM towns
+    GROUP BY county
+    HAVING count(*)>5
+    ORDER BY total_pop DESC
+    """)
+    return
+
+
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
@@ -529,6 +538,94 @@ def _(mo):
 
     **Going further.** Answer one question of your own about the towns with `GROUP BY`, and check it in polars on `town_rows`. Or download the TV show database from [Downloads](https://oim6301.github.io/downloads/), keep it out of your repository, and answer the two TV show questions from the topic slides.
     """)
+    return
+
+
+@app.cell
+def _(ask):
+    #1
+    ask("""
+        SELECT
+            counties.name AS county,
+            count(towns.name) AS counted_towns,
+            counties.towns AS counties_towns_column
+        FROM counties
+        LEFT JOIN towns ON towns.county = counties.name
+        GROUP BY counties.name, counties.towns
+        ORDER BY counted_towns DESC
+    """)
+    return
+
+
+@app.cell
+def _(ask):
+    #2
+    ask("""
+        SELECT sum(town_count) AS total_towns
+        FROM (
+            SELECT county, count(*) AS town_count
+            FROM towns
+            GROUP BY county
+        )
+    """)
+    return
+
+
+@app.cell
+def _(mo):
+    mo.md(r"""
+    The sum has to equal the number of rows in towns because GROUP BY county splits every row of towns into exactly one group. No row is left out or counted twice, so adding up each group's count just adds up all the rows again, one group at a time.
+    """)
+    return
+
+
+@app.cell
+def _(ask):
+    #3
+    ask("""
+        SELECT
+            county,
+            sum(population) AS total_population,
+            sum(CASE WHEN average_single_family_bill_dollars > 10000 THEN population ELSE 0 END) AS high_bill_population,
+            round(
+                100.0 * sum(CASE WHEN average_single_family_bill_dollars > 10000 THEN population ELSE 0 END)
+                    / sum(population),
+                2
+            ) AS pct_in_high_bill_towns
+        FROM towns
+        GROUP BY county
+        ORDER BY total_population DESC
+    """)
+    return
+
+
+@app.cell
+def _(mo):
+    mo.md(r"""
+    Going further: Which county has the highest average income per capita among its towns?
+    """)
+    return
+
+
+@app.cell
+def _(ask):
+    ask("""
+        SELECT county, round(avg(income_per_capita_dollars), 2) AS avg_income_per_capita
+        FROM towns
+        GROUP BY county
+        ORDER BY avg_income_per_capita DESC
+    """)
+    return
+
+
+@app.cell
+def _(pl, town_rows):
+    (
+        town_rows
+        .group_by("county")
+        .agg(pl.col("income_per_capita_dollars").mean().round(2).alias("avg_income_per_capita"))
+        .sort("avg_income_per_capita", descending=True)
+    )
     return
 
 
@@ -580,7 +677,7 @@ def _(ask, mo, requests):
         _path.write_bytes(_reply.content)
     orders_file = _path.as_posix()
     ask(f"SELECT count(*) AS orders FROM '{orders_file}'")
-    return
+    return (orders_file,)
 
 
 @app.cell(hide_code=True)
@@ -590,6 +687,38 @@ def _(mo):
     2. For each country, the number of orders and the total of `Freight`, the most freight first. *Check yourself: USA with 2,328 orders and 573,251 in freight, then Germany with 2,193 and 537,189.75, then France with 1,778 and 442,055.75.*
 
     **Going further.** Rank the countries by freight per order instead, and see which countries move.
+    """)
+    return
+
+
+@app.cell
+def _(ask, orders_file):
+    #1
+    ask(f"SELECT count(DISTINCT ShipCountry) AS countries FROM '{orders_file}'")
+    return
+
+
+@app.cell
+def _(ask, orders_file):
+    #2
+    ask(f"""
+        SELECT ShipCountry, count(*) AS orders, round(sum(Freight),2) AS total_freight
+        FROM '{orders_file}'
+        GROUP BY ShipCountry
+        ORDER BY total_freight DESC
+    """)
+    return
+
+
+@app.cell
+def _(ask, orders_file):
+    #going further
+    ask(f"""
+        SELECT ShipCountry, count(*) AS orders, round(sum(Freight), 2) AS total_freight,
+               round(sum(Freight) / count(*), 2) AS freight_per_order
+        FROM '{orders_file}'
+        GROUP BY ShipCountry
+        ORDER BY freight_per_order DESC
     """)
     return
 
