@@ -216,6 +216,42 @@ def _(mo):
     return
 
 
+@app.cell
+def _(ask, towns_database):
+    #1
+    ask(towns_database, """
+        SELECT t.name, t.county, t.population, c.population AS county_population
+        FROM towns AS t
+        JOIN counties AS c ON t.county = c.name
+        ORDER BY t.population DESC
+    """)
+    return
+
+
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    The table outputs 351 rows this is because there are 351 unique combinations inside the data, and each combination is represented as a single row in the output, which represent a town in the database.
+
+    3. Nantucket accounts for 100% of the county's population since Nantucket it is the only town listed under Nantucket county, therefore it represents the entire of that county's population in this dataset.
+    """)
+    return
+
+
+@app.cell
+def _(ask, towns_database):
+    #2
+    ask(towns_database, """
+        SELECT t.name, t.county, t.population, c.population AS county_population,
+               round(100.0 * t.population / c.population, 1) AS pct_of_county
+        FROM towns AS t
+        JOIN counties AS c ON t.county = c.name
+        ORDER BY pct_of_county DESC
+        LIMIT 5
+    """)
+    return
+
+
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
@@ -273,6 +309,18 @@ def _(mo):
     *Check yourself: four territories, Columbia, Bentonville, Dallas and Austin.*
 
     **Going further.** List the employees with the number of territories each covers, and check that the counts add up to the rows of `employee_territories`. Then find the same four territories with `WHERE NOT EXISTS (...)`.
+    """)
+    return
+
+
+@app.cell
+def _(ask, northwind_database):
+    ask(northwind_database, """
+        SELECT t.TerritoryID, t.TerritoryDescription
+        FROM territories AS t
+        LEFT JOIN employee_territories AS et
+            ON et.TerritoryID = t.TerritoryID
+        WHERE et.TerritoryID IS NULL
     """)
     return
 
@@ -378,6 +426,26 @@ def _(mo):
     return
 
 
+@app.cell
+def _(ask, northwind_database):
+    ask(northwind_database, """
+        SELECT ShipCountry, round(sum(Freight), 2) AS total_freight
+        FROM orders
+        GROUP BY ShipCountry
+        ORDER BY total_freight DESC
+    """)
+    return
+
+
+@app.cell
+def _(ask, northwind_database):
+    ask(northwind_database, """
+        SELECT round(sum(Freight), 2) AS total_freight
+        FROM orders
+    """)
+    return
+
+
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
@@ -394,6 +462,122 @@ def _(mo):
     *Check yourself: Beverages first, with about 13,375,939, and all eight, added before rounding, give 63,856,337.63.*
 
     **Going further.** Compute revenue by category for each year, and find the category that grew the most.
+    """)
+    return
+
+
+@app.cell
+def _(ask, northwind_database):
+    ask(northwind_database, """
+        SELECT c.CategoryName,
+               round(sum(od.UnitPrice * od.Quantity * (1 - od.Discount)), 2) AS revenue
+        FROM orders AS o
+        JOIN order_details AS od ON od.OrderID = o.OrderID
+        JOIN products AS p ON p.ProductID = od.ProductID
+        JOIN categories AS c ON c.CategoryID = p.CategoryID
+        WHERE o.ShipCountry = 'USA'
+        GROUP BY c.CategoryName
+        ORDER BY revenue DESC
+    """)
+    return
+
+
+@app.cell
+def _(ask, northwind_database):
+    #total revenue
+    ask(northwind_database, """
+        SELECT round(sum(od.UnitPrice * od.Quantity * (1 - od.Discount)), 2) AS usa_revenue
+        FROM orders AS o
+        JOIN order_details AS od ON od.OrderID = o.OrderID
+        WHERE o.ShipCountry = 'USA'
+    """)
+    return
+
+
+@app.cell
+def _(ask, northwind_database):
+    #going further try
+    ask(northwind_database, """
+        SELECT c.CategoryName, date_part('year', o.OrderDate) AS year,
+               round(sum(od.UnitPrice * od.Quantity * (1 - od.Discount)), 2) AS revenue
+        FROM orders AS o
+        JOIN order_details AS od ON od.OrderID = o.OrderID
+        JOIN products AS p ON p.ProductID = od.ProductID
+        JOIN categories AS c ON c.CategoryID = p.CategoryID
+        GROUP BY c.CategoryName, year
+        ORDER BY c.CategoryName, year
+    """)
+    return
+
+
+@app.cell
+def _(ask, northwind_database):
+    ask(northwind_database, """
+        WITH yearly AS (
+            SELECT c.CategoryName, date_part('year', o.OrderDate) AS year,
+                   sum(od.UnitPrice * od.Quantity * (1 - od.Discount)) AS revenue
+            FROM orders AS o
+            JOIN order_details AS od ON od.OrderID = o.OrderID
+            JOIN products AS p ON p.ProductID = od.ProductID
+            JOIN categories AS c ON c.CategoryID = p.CategoryID
+            GROUP BY c.CategoryName, year
+        )
+        SELECT first.CategoryName,
+               round(first.revenue, 2) AS first_year_revenue,
+               round(last.revenue, 2) AS last_year_revenue,
+               round(last.revenue - first.revenue, 2) AS growth
+        FROM (SELECT * FROM yearly WHERE year = (SELECT min(year) FROM yearly)) AS first
+        JOIN (SELECT * FROM yearly WHERE year = (SELECT max(year) FROM yearly)) AS last
+            ON last.CategoryName = first.CategoryName
+        ORDER BY growth DESC
+    """)
+    return
+
+
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    #Responding to a query
+    Which three employees generated the highest total sales revenue, and which product category contributed the most to each employee's sales?
+    """)
+    return
+
+
+@app.cell
+def _(ask, northwind_database):
+    ask(northwind_database, """
+    WITH top3 AS (
+        SELECT EmployeeID
+        FROM orders o
+        JOIN order_details od ON o.OrderID = od.OrderID
+        GROUP BY EmployeeID
+        ORDER BY SUM(od.UnitPrice * od.Quantity * (1 - od.Discount)) DESC
+        LIMIT 3
+    )
+
+    SELECT
+        e.FirstName,
+        e.LastName,
+        c.CategoryName,
+        ROUND(SUM(od.UnitPrice * od.Quantity * (1 - od.Discount)), 2) AS category_revenue
+
+    FROM top3 t
+    JOIN employees e ON t.EmployeeID = e.EmployeeID
+    JOIN orders o ON e.EmployeeID = o.EmployeeID
+    JOIN order_details od ON o.OrderID = od.OrderID
+    JOIN products p ON od.ProductID = p.ProductID
+    JOIN categories c ON p.CategoryID = c.CategoryID
+
+    GROUP BY e.FirstName, e.LastName, c.CategoryName
+    ORDER BY e.LastName, category_revenue DESC
+    """)
+    return
+
+
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    Steven Buchanan, Margaret Peacock, and Janet Leverling were the top highest revenue producing employees. Steven Buchanan's biggest revenue contributor was Beverages with $10,612,522.53. Janet Leverling's best product category was Beverages as well with $10,742,113.91. Lastly, Margaret Peacock also produced the most revenue in the Beverages category with $10,589,737.71.
     """)
     return
 
@@ -443,7 +627,7 @@ def _(mo, os, pl):
             return pl.DataFrame(_cursor.fetchall(), schema=_columns, orient="row")
 
     ask_server("SELECT TOP 5 SalesOrderID, OrderDate, Freight FROM Sales.SalesOrderHeader ORDER BY SalesOrderID")
-    return
+    return (ask_server,)
 
 
 @app.cell(hide_code=True)
@@ -466,6 +650,65 @@ def _(mo):
     3. Find the customers in `Sales.Customer` who never placed an order, and the products in `Production.Product` that never sold. *Check yourself: 701 customers and 238 products.*
 
     **Going further.** Answer one question of your own about AdventureWorks that needs three tables, and check it against a total you can get from one of them.
+    """)
+    return
+
+
+@app.cell
+def _(ask_server):
+    ask_server("""
+        SELECT
+            (SELECT COUNT(*) FROM Sales.SalesOrderHeader) AS orders,
+            (SELECT COUNT(*) FROM Sales.SalesOrderDetail) AS order_lines,
+            (SELECT COUNT(*)
+             FROM Sales.SalesOrderHeader AS h
+             JOIN Sales.SalesOrderDetail AS d ON d.SalesOrderID = h.SalesOrderID) AS joined
+    """)
+    return
+
+
+@app.cell
+def _(mo):
+    mo.md(r"""
+    The join has exactly 121,317 rows, the same as "Sales.SalesOrderDetail" , because every row in SalesOrderDetail has a SalesOrderID that matches exactly one row in SalesOrderHeader. Each order line belongs to one order, so the join finds one matching header row for every detail row. So the join produces one row per order line, not one row per order.
+    """)
+    return
+
+
+@app.cell
+def _(ask_server):
+    ask_server("""
+        SELECT
+            (SELECT round(sum(Freight),2) FROM Sales.SalesOrderHeader) AS freight,
+            (SELECT round(sum(h.Freight),2)
+             FROM Sales.SalesOrderHeader AS h
+             JOIN Sales.SalesOrderDetail AS d ON d.SalesOrderID = h.SalesOrderID) AS freight_after_the_join
+    """)
+    return
+
+
+@app.cell
+def _(ask_server):
+    #3 customers
+    ask_server("""
+        SELECT COUNT(*) AS customers_with_no_orders
+        FROM Sales.Customer AS c
+        LEFT JOIN Sales.SalesOrderHeader AS h
+            ON h.CustomerID = c.CustomerID
+        WHERE h.CustomerID IS NULL
+    """)
+    return
+
+
+@app.cell
+def _(ask_server):
+    #3b products
+    ask_server("""
+        SELECT COUNT(*) AS products_never_sold
+        FROM Production.Product AS p
+        LEFT JOIN Sales.SalesOrderDetail AS d
+            ON d.ProductID = p.ProductID
+        WHERE d.ProductID IS NULL
     """)
     return
 
