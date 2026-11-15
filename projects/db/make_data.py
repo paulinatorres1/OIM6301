@@ -269,7 +269,8 @@ for portfolio in portfolios:
                 break
 
             price = closing_price_lookup[(asset_id, current_date)]
-            holding = holdings_by_pair[pair_key]
+        # Match the six decimal places stored in the CSV and remove floating-point leftovers.
+            holding = round(holdings_by_pair[pair_key], 6)
 
             if holding <= 0:
                 trade_type = "buy"
@@ -284,7 +285,10 @@ for portfolio in portfolios:
                 holding += quantity
             else:
                 if asset_type == "crypto":
-                    quantity = round(random.uniform(0.01, holding), 6)
+                                        # If we hold less than 0.01, use the balance as the minimum sale size.
+                    minimum_sell = min(0.01, holding)
+                    # The sale can be as large as the balance, but no larger.
+                    quantity = round(random.uniform(minimum_sell, holding), 6)
                 else:
                     quantity = float(random.randint(1, max(int(holding), 1)))
                 holding -= quantity
